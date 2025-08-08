@@ -319,14 +319,10 @@ export default function LinasoulPortfolio() {
                   />
                 </div>
 
-                <Button
-  type="submit"
-  size="lg"
-  className="w-full bg-[#f9f5ec] hover:bg-[#f2e8dc] text-gray-800"
->
-  <Send className="h-4 w-4 mr-2" />
-  Send Inquiry
-</Button>
+                <Button type="submit" className="w-full bg-rose-400 hover:bg-rose-500 text-white" size="lg">
+                  <Send className="h-4 w-4 mr-2" />
+                  Send Inquiry
+                </Button>
               </form>
             </CardContent>
           </Card>
