@@ -159,18 +159,6 @@ export default function LinasoulPortfolio() {
           </Button>
         </div>
 
-        {/* Featured Artwork Preview */}
-        <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2">
-          <div className="w-32 h-20 rounded-lg overflow-hidden shadow-lg">
-            <Image
-              src="/placeholder.svg?height=80&width=128"
-              alt="Featured artwork preview"
-              width={128}
-              height={80}
-              className="object-cover"
-            />
-          </div>
-        </div>
       </section>
 
       {/* About Section */}
