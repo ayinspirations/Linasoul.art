@@ -152,7 +152,7 @@ export default function LinasoulPortfolio() {
           </p>
           <Button
             size="lg"
-            className="bg-rose-400 hover:bg-rose-500 text-white px-8 py-3 rounded-full shadow-lg"
+            className="bg-beige hover:bg-beige-dark text-gray-800 px-8 py-3 rounded-full shadow-lg"
             onClick={() => document.getElementById("gallery")?.scrollIntoView({ behavior: "smooth" })}
           >
             View My Work
