@@ -34,7 +34,7 @@ export default function LinasoulPortfolio() {
       medium: "Acrylic on Canvas",
       price: "$850",
       available: true,
-      image: "/placeholder.svg?height=600&width=400",
+      image: "/public/images/IMG_4634.jpeg?height=600&width=400",
     },
     {
       id: 2,
@@ -43,7 +43,7 @@ export default function LinasoulPortfolio() {
       medium: "Acrylic on Canvas",
       price: "$1,200",
       available: true,
-      image: "/placeholder.svg?height=600&width=450",
+      image: "//public/images/IMG_4643.jpeg?height=600&width=450",
     },
     {
       id: 3,
@@ -52,7 +52,7 @@ export default function LinasoulPortfolio() {
       medium: "Acrylic on Canvas",
       price: "$650",
       available: false,
-      image: "/placeholder.svg?height=600&width=400",
+      image: "//public/images/IMG_4646.jpeg?height=600&width=400",
     },
     {
       id: 4,
@@ -61,7 +61,7 @@ export default function LinasoulPortfolio() {
       medium: "Acrylic on Canvas",
       price: "$1,800",
       available: true,
-      image: "/placeholder.svg?height=600&width=500",
+      image: "/abstract-background.jpeg?height=600&width=500",
     },
     {
       id: 5,
