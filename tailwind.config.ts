@@ -39,6 +39,10 @@ const config: Config = {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
         },
+        beige: {
+        DEFAULT: "#f3ead7", // weicher Ton, schöner für Hintergrund oder Buttons
+        hover: "#e6dbc2",
+        },
         secondary: {
           DEFAULT: "hsl(var(--secondary))",
           foreground: "hsl(var(--secondary-foreground))",
