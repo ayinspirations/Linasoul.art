@@ -205,7 +205,7 @@ export default function LinasoulPortfolio() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* beide Blöcke in EINEM Flex-Wrapper */}
           <div className="flex h-16 items-center justify-between">
-            <div className="flex h-16 items-center mt-1"> {/* hier mt-1 oder mt-2 für mehr */}
+            <div className="flex h-16 items-center mt-3"> {/* hier mt-1 oder mt-2 für mehr */}
   <Link href="#home" className="inline-flex h-16 items-center">
     <Image
       src="/images/Logo_schwarz_2.png"
