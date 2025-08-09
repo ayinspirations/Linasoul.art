@@ -304,7 +304,7 @@ export default function LinasoulPortfolio() {
             <div className="relative">
               <div className="aspect-square overflow-hidden rounded-2xl shadow-2xl">
                 <Image
-                  src="/placeholder.svg?height=500&width=500"
+                  src="/image/AboutMe1.jpeg"
                   alt="Lina in her studio"
                   width={500}
                   height={500}
