@@ -206,32 +206,48 @@ export default function LinasoulPortfolio() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-blue-50">
       {/* Navbar */}
-      <nav className="fixed top-0 z-50 w-full border-b border-rose-100 bg-white/80 backdrop-blur-md">
-  <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-    {/* eine gemeinsame Flex-Zeile, feste Höhe */}
-    <div className="flex h-16 items-center justify-between">
-      {/* Logo: mit fill in einem festen Container, so bleibt es wirklich mittig */}
-      <Link href="#home" className="flex items-center h-16">
-  <div className="relative h-16 w-[230px] flex items-center">
-    <Image
-      src="/images/Logo_schwarz_2.png"
-      alt="Linasoul Logo"
-      fill
-      priority
-      className="object-contain object-center"
-    />
-  </div>
-</Link>
-      <div className="hidden space-x-8 md:flex">
-        <a href="#home" className="text-gray-600 transition-colors hover:text-rose-400">Home</a>
-        <a href="#about" className="text-gray-600 transition-colors hover:text-rose-400">About</a>
-        <a href="#gallery" className="text-gray-600 transition-colors hover:text-rose-400">Gallery</a>
-        <a href="#purchase" className="text-gray-600 transition-colors hover:text-rose-400">Purchase</a>
-        <a href="#contact" className="text-gray-600 transition-colors hover:text-rose-400">Contact</a>
+      <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b border-rose-100">
+  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="flex justify-between items-center" style={{ height: "80px" }}>
+      {/* Logo links */}
+      <a href="#home" className="flex items-center h-full">
+        <Image
+          src="/images/Logo_schwarz_2.png"
+          alt="Linasoul Logo"
+          width={0}
+          height={0}
+          sizes="100vw"
+          style={{
+            height: "100%", // nimmt gesamte Höhe der Navbar
+            width: "auto",  // Breite proportional
+            objectFit: "contain",
+          }}
+          priority
+        />
+      </a>
+
+      {/* Navigation rechts */}
+      <div className="hidden md:flex space-x-8">
+        <a href="#home" className="text-gray-600 hover:text-rose-400 transition-colors">
+          Home
+        </a>
+        <a href="#about" className="text-gray-600 hover:text-rose-400 transition-colors">
+          About
+        </a>
+        <a href="#gallery" className="text-gray-600 hover:text-rose-400 transition-colors">
+          Gallery
+        </a>
+        <a href="#purchase" className="text-gray-600 hover:text-rose-400 transition-colors">
+          Purchase
+        </a>
+        <a href="#contact" className="text-gray-600 hover:text-rose-400 transition-colors">
+          Contact
+        </a>
       </div>
     </div>
   </div>
 </nav>
+
 
 
       {/* Hero */}
