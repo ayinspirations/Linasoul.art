@@ -46,7 +46,7 @@ export default function LinasoulPortfolio() {
       medium: "Acrylic on Canvas",
       price: "$850",
       available: true,
-      images: ["/images/IMG_4634.jpeg"],["/images/IMG_4643.jpeg"],["/images/IMG_4646.jpeg"], // weitere Detailbilder einfach anhängen
+      images: ["/images/IMG_4634.jpeg", "/images/IMG_4643.jpeg", "/images/IMG_4646.jpeg"], // weitere Detailbilder einfach anhängen
     },
     {
       id: 2,
