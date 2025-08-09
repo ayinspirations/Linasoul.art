@@ -426,8 +426,13 @@ export default function LinasoulPortfolio() {
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex items-center justify-center space-x-2 mb-4">
-              <Palette className="h-6 w-6 text-rose-400" />
-              <span className="text-2xl font-light font-amsterdam-two">Linasoul</span>
+              <Image
+  src="/images/Logo_schwarz_2.png"
+  alt="Linasoul Logo"
+  width={120}
+  height={40}
+  priority
+/>
             </div>
             <p className="text-gray-400 mb-4">Abstract Acrylic Artist • Creating art that touches the soul</p>
             <p className="text-gray-500 text-sm">© 2024 Linasoul. All rights reserved.</p>
