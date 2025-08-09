@@ -46,7 +46,7 @@ export default function LinasoulPortfolio() {
       medium: "Acrylic on Canvas",
       price: "$850",
       available: true,
-      images: ["/images/IMG_4634.jpeg"], // weitere Detailbilder einfach anhängen
+      images: ["/images/IMG_4634.jpeg"],["/images/IMG_4643.jpeg"],["/images/IMG_4646.jpeg"], // weitere Detailbilder einfach anhängen
     },
     {
       id: 2,
@@ -203,18 +203,18 @@ export default function LinasoulPortfolio() {
       {/* Navigation */}
       <nav className="fixed top-0 z-50 w-full border-b border-rose-100 bg-white/80 backdrop-blur-md">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <div className="flex items-center space-x-2">
-              <Link href="#home" className="flex items-center">
-                <Image
-                  src="/images/Logo_schwarz_2.png"
-                  alt="Linasoul Logo"
-                  width={120}
-                  height={40}
-                  priority
-                />
-              </Link>
-            </div>
+          <div className="flex h-16 items-center">
+  <Link href="#home" className="inline-flex items-center">
+    <Image
+      src="/images/Logo_schwarz_2.png"
+      alt="Linasoul Logo"
+      width={120}
+      height={40}
+      priority
+      className="block"
+    />
+  </Link>
+</div>
             <div className="hidden space-x-8 md:flex">
               <a href="#home" className="text-gray-600 transition-colors hover:text-rose-400">
                 Home
@@ -248,8 +248,14 @@ export default function LinasoulPortfolio() {
         </div>
 
         <div className="relative z-10 mx-auto max-w-4xl px-4 text-center">
-          <Image src="/images/Logo.png" alt="Linasoul Logo" width={400} height={150} priority />
-          <p className="mb-8 text-xl font-light text-gray-800 drop-shadow-md md:text-2xl">
+          <Image
+  src="/images/Logo.png"
+  alt="Linasoul Logo"
+  width={400}
+  height={150}
+  priority
+  className="block mx-auto"
+ />
             Abstract Acrylic Artist
           </p>
           <p className="mx-auto mb-12 max-w-2xl text-lg leading-relaxed text-gray-700 drop-shadow-md">
