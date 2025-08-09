@@ -211,18 +211,17 @@ export default function LinasoulPortfolio() {
     {/* eine gemeinsame Flex-Zeile, feste Höhe */}
     <div className="flex h-16 items-center justify-between">
       {/* Logo: mit fill in einem festen Container, so bleibt es wirklich mittig */}
-      <Link href="#home" className="flex h-full items-center">
-  <div className="relative h-14 w-[220px]">
+      <Link href="#home" className="flex items-center h-16">
+  <div className="relative h-16 w-[230px] flex items-center">
     <Image
       src="/images/Logo_schwarz_2.png"
       alt="Linasoul Logo"
       fill
       priority
-      className="object-contain object-center block"
+      className="object-contain object-center"
     />
   </div>
 </Link>
-
       <div className="hidden space-x-8 md:flex">
         <a href="#home" className="text-gray-600 transition-colors hover:text-rose-400">Home</a>
         <a href="#about" className="text-gray-600 transition-colors hover:text-rose-400">About</a>
