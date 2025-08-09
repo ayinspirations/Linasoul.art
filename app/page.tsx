@@ -207,38 +207,33 @@ export default function LinasoulPortfolio() {
     <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-blue-50">
       {/* Navbar */}
       <nav className="fixed top-0 z-50 w-full border-b border-rose-100 bg-white/80 backdrop-blur-md">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center justify-between">
-            <Link href="#home" className="flex h-full items-center">
-              <Image
-                src="/images/Logo_schwarz_2.png"
-                alt="Linasoul Logo"
-                width={120}
-                height={40}
-                priority
-                className="block object-contain"
-              />
-            </Link>
-            <div className="hidden space-x-8 md:flex">
-              <a href="#home" className="text-gray-600 transition-colors hover:text-rose-400">
-                Home
-              </a>
-              <a href="#about" className="text-gray-600 transition-colors hover:text-rose-400">
-                About
-              </a>
-              <a href="#gallery" className="text-gray-600 transition-colors hover:text-rose-400">
-                Gallery
-              </a>
-              <a href="#purchase" className="text-gray-600 transition-colors hover:text-rose-400">
-                Purchase
-              </a>
-              <a href="#contact" className="text-gray-600 transition-colors hover:text-rose-400">
-                Contact
-              </a>
-            </div>
-          </div>
+  <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    {/* eine gemeinsame Flex-Zeile, feste Höhe */}
+    <div className="flex h-16 items-center justify-between">
+      {/* Logo: mit fill in einem festen Container, so bleibt es wirklich mittig */}
+      <Link href="#home" className="flex h-full items-center">
+        <div className="relative h-8 w-[150px]">
+          <Image
+            src="/images/Logo_schwarz_2.png"
+            alt="Linasoul Logo"
+            fill
+            priority
+            className="object-contain object-center block"
+          />
         </div>
-      </nav>
+      </Link>
+
+      <div className="hidden space-x-8 md:flex">
+        <a href="#home" className="text-gray-600 transition-colors hover:text-rose-400">Home</a>
+        <a href="#about" className="text-gray-600 transition-colors hover:text-rose-400">About</a>
+        <a href="#gallery" className="text-gray-600 transition-colors hover:text-rose-400">Gallery</a>
+        <a href="#purchase" className="text-gray-600 transition-colors hover:text-rose-400">Purchase</a>
+        <a href="#contact" className="text-gray-600 transition-colors hover:text-rose-400">Contact</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
 
       {/* Hero */}
       <section id="home" className="relative flex min-h-screen items-center justify-center overflow-hidden pt-16">
