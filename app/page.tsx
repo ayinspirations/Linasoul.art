@@ -1,10 +1,10 @@
 "use client"
 
 import type React from "react"
-
 import { useState } from "react"
 import Image from "next/image"
-import { Mail, Phone, MapPin, Heart, Palette, Send } from 'lucide-react'
+import Link from "next/link"
+import { Mail, Phone, MapPin, Heart, Palette, Send } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -34,7 +34,7 @@ export default function LinasoulPortfolio() {
       medium: "Acrylic on Canvas",
       price: "$850",
       available: true,
-      image: "/images/IMG_4634.jpeg?height=600&width=400",
+      image: "/images/IMG_4634.jpeg",
     },
     {
       id: 2,
@@ -43,7 +43,7 @@ export default function LinasoulPortfolio() {
       medium: "Acrylic on Canvas",
       price: "$1,200",
       available: true,
-      image: "/images/IMG_4643.jpeg?height=600&width=450",
+      image: "/images/IMG_4643.jpeg",
     },
     {
       id: 3,
@@ -52,7 +52,7 @@ export default function LinasoulPortfolio() {
       medium: "Acrylic on Canvas",
       price: "$650",
       available: false,
-      image: "/images/IMG_4646.jpeg?height=600&width=400",
+      image: "/images/IMG_4646.jpeg",
     },
     {
       id: 4,
@@ -61,7 +61,7 @@ export default function LinasoulPortfolio() {
       medium: "Acrylic on Canvas",
       price: "$1,800",
       available: true,
-      image: "images/abstract-background.jpeg?height=600&width=500",
+      image: "/images/abstract-background.jpeg",
     },
     {
       id: 5,
@@ -70,7 +70,7 @@ export default function LinasoulPortfolio() {
       medium: "Acrylic on Canvas",
       price: "$750",
       available: true,
-      image: "/placeholder.svg?height=600&width=400",
+      image: "/placeholder.svg",
     },
     {
       id: 6,
@@ -79,19 +79,17 @@ export default function LinasoulPortfolio() {
       medium: "Acrylic on Canvas",
       price: "$1,400",
       available: true,
-      image: "/placeholder.svg?height=600&width=450",
+      image: "/placeholder.svg",
     },
   ]
 
   const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle contact form submission
     console.log("Contact form submitted:", contactForm)
   }
 
   const handleInquirySubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle inquiry form submission
     console.log("Inquiry form submitted:", inquiryForm)
   }
 
@@ -102,13 +100,15 @@ export default function LinasoulPortfolio() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
-             <Image
-  src="/images/Logo_schwarz_2.png"
-  alt="Linasoul Logo"
-  width={120} // anpassen
-  height={40} // anpassen
-  priority
-/>
+              <Link href="#home" className="flex items-center">
+                <Image
+                  src="/images/Logo_schwarz_2.png"
+                  alt="Linasoul Logo"
+                  width={120}
+                  height={40}
+                  priority
+                />
+              </Link>
             </div>
             <div className="hidden md:flex space-x-8">
               <a href="#home" className="text-gray-600 hover:text-rose-400 transition-colors">
@@ -135,39 +135,36 @@ export default function LinasoulPortfolio() {
       <section id="home" className="pt-16 min-h-screen flex items-center justify-center relative overflow-hidden">
         {/* Abstract Painting Background */}
         <div className="absolute inset-0">
-          {/* Background Image with Transparency */}
-          <div 
+          <div
             className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-60"
-            style={{
-              backgroundImage: "url('/images/abstract-background.jpeg')"
-            }}
+            style={{ backgroundImage: "url('/images/abstract-background.jpeg')" }}
           />
-          {/* Subtle white overlay for better text readability */}
           <div className="absolute inset-0 bg-white/20" />
         </div>
 
         <div className="relative z-10 text-center max-w-4xl mx-auto px-4">
           <Image
-  src="/images/Logo.png"
-  alt="Linasoul Logo"
-  width={400} // größer für Hero
-  height={150}
-  priority
-/>
-          <p className="text-xl md:text-2xl text-gray-800 mb-8 font-light drop-shadow-md">Abstract Acrylic Artist</p>
+            src="/images/Logo.png"
+            alt="Linasoul Logo"
+            width={400}
+            height={150}
+            priority
+          />
+          <p className="text-xl md:text-2xl text-gray-800 mb-8 font-light drop-shadow-md">
+            Abstract Acrylic Artist
+          </p>
           <p className="text-lg text-gray-700 mb-12 max-w-2xl mx-auto leading-relaxed drop-shadow-md">
             Exploring the depths of emotion through fluid forms and ethereal colors, creating pieces that speak to the
             soul and inspire contemplation.
           </p>
           <Button
             size="lg"
-            className="bg-beige hover:bg-beige-dark text-gray-800 px-8 py-3 rounded-full shadow-lg"
+            className="bg-[#f9f5ec] hover:bg-[#f2e8dc] text-gray-800 px-8 py-3 rounded-full shadow-lg"
             onClick={() => document.getElementById("gallery")?.scrollIntoView({ behavior: "smooth" })}
           >
             View My Work
           </Button>
         </div>
-
       </section>
 
       {/* About Section */}
@@ -253,7 +250,7 @@ export default function LinasoulPortfolio() {
                     {artwork.available && (
                       <Button
                         size="sm"
-                        variant="outline"
+                        className="bg-[#f9f5ec] hover:bg-[#f2e8dc] text-gray-800"
                         onClick={() => {
                           setInquiryForm((prev) => ({ ...prev, artwork: artwork.title }))
                           document.getElementById("purchase")?.scrollIntoView({ behavior: "smooth" })
@@ -328,7 +325,7 @@ export default function LinasoulPortfolio() {
                   />
                 </div>
 
-                <Button type="submit" className="w-full bg-rose-400 hover:bg-rose-500 text-white" size="lg">
+                <Button type="submit" className="w-full bg-[#f9f5ec] hover:bg-[#f2e8dc] text-gray-800" size="lg">
                   <Send className="h-4 w-4 mr-2" />
                   Send Inquiry
                 </Button>
@@ -411,7 +408,7 @@ export default function LinasoulPortfolio() {
                     />
                   </div>
 
-                  <Button type="submit" className="w-full bg-rose-400 hover:bg-rose-500 text-white" size="lg">
+                  <Button type="submit" className="w-full bg-[#f9f5ec] hover:bg-[#f2e8dc] text-gray-800" size="lg">
                     Send Message
                   </Button>
                 </form>
@@ -425,14 +422,16 @@ export default function LinasoulPortfolio() {
       <footer className="bg-gray-800 text-white py-12">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="flex items-center justify-center space-x-2 mb-4">
-              <Image
-  src="/images/Logo_schwarz_2.png"
-  alt="Linasoul Logo"
-  width={120}
-  height={40}
-  priority
-/>
+            <div className="flex items-center justify-center mb-4">
+              <Link href="#home" className="flex items-center justify-center">
+                <Image
+                  src="/images/Logo_schwarz_2.png"
+                  alt="Linasoul Logo"
+                  width={120}
+                  height={40}
+                  priority
+                />
+              </Link>
             </div>
             <p className="text-gray-400 mb-4">Abstract Acrylic Artist • Creating art that touches the soul</p>
             <p className="text-gray-500 text-sm">© 2024 Linasoul. All rights reserved.</p>
