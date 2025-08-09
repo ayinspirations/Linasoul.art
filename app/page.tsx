@@ -102,8 +102,13 @@ export default function LinasoulPortfolio() {
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
-              <Palette className="h-6 w-6 text-rose-400" />
-              <span className="text-2xl font-light text-gray-800 font-amsterdam-two">Linasoul</span>
+             <Image
+  src="/images/Logo.png"
+  alt="Linasoul Logo"
+  width={120} // anpassen
+  height={40} // anpassen
+  priority
+/>
             </div>
             <div className="hidden md:flex space-x-8">
               <a href="#home" className="text-gray-600 hover:text-rose-400 transition-colors">
