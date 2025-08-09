@@ -175,9 +175,17 @@ export default function LinasoulPortfolio() {
       <nav className="fixed top-0 z-50 w-full border-b border-rose-100 bg-white/80 backdrop-blur-md">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
-            <Link href="#home" className="inline-flex items-center">
-              <Image src="/images/Logo_schwarz_2.png" alt="Linasoul Logo" width={120} height={40} priority />
-            </Link>
+            <Link href="#home" className="flex items-center h-full">
+  <Image
+    src="/images/Logo_schwarz_2.png"
+    alt="Linasoul Logo"
+    width={120}
+    height={40}
+    priority
+    className="object-contain"
+  />
+</Link>
+
             <div className="hidden space-x-8 md:flex">
               <a href="#home" className="text-gray-600 hover:text-rose-400">Home</a>
               <a href="#about" className="text-gray-600 hover:text-rose-400">About</a>
