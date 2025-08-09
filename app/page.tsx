@@ -103,7 +103,7 @@ export default function LinasoulPortfolio() {
           <div className="flex justify-between items-center h-16">
             <div className="flex items-center space-x-2">
              <Image
-  src="/images/Logo.png"
+  src="/images/Logo_schwarz_2.png"
   alt="Linasoul Logo"
   width={120} // anpassen
   height={40} // anpassen
@@ -147,9 +147,13 @@ export default function LinasoulPortfolio() {
         </div>
 
         <div className="relative z-10 text-center max-w-4xl mx-auto px-4">
-          <h1 className="text-6xl md:text-8xl text-black mb-6 drop-shadow-lg font-amsterdam-two">
-            Lina<span className="text-amber-100">soul</span>
-          </h1>
+          <Image
+  src="/images/Logo.png"
+  alt="Linasoul Logo"
+  width={400} // größer für Hero
+  height={150}
+  priority
+/>
           <p className="text-xl md:text-2xl text-gray-800 mb-8 font-light drop-shadow-md">Abstract Acrylic Artist</p>
           <p className="text-lg text-gray-700 mb-12 max-w-2xl mx-auto leading-relaxed drop-shadow-md">
             Exploring the depths of emotion through fluid forms and ethereal colors, creating pieces that speak to the
