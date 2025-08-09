@@ -46,7 +46,7 @@ export default function LinasoulPortfolio() {
       medium: "Acrylic on Canvas",
       price: "$850",
       available: true,
-      images: ["/images/IMG_4634.jpeg", "/images/IMG_4643.jpeg", "/images/IMG_4646.jpeg"], // weitere Detailbilder einfach anhängen
+      images: ["/images/IMG_4634.jpeg", "/images/IMG_4643.jpeg", "/images/IMG_4646.jpeg"], // mehrere Bilder
     },
     {
       id: 2,
@@ -122,14 +122,14 @@ export default function LinasoulPortfolio() {
     const nextImage = () => setIdx((p) => (p === artwork.images.length - 1 ? 0 : p + 1))
 
     return (
-      <Card className="group overflow-hidden border-0 shadow-lg hover:shadow-2xl transition-all duration-300">
+      <Card className="group overflow-hidden border-0 shadow-lg transition-all duration-300 hover:shadow-2xl">
         <div className="relative aspect-[3/4] overflow-hidden">
           <Image
             src={artwork.images[idx] || "/placeholder.svg"}
             alt={artwork.title}
             width={400}
             height={600}
-            className="h-full w-full object-cover group-hover:scale-105 transition-transform duration-300 cursor-zoom-in"
+            className="h-full w-full cursor-zoom-in object-cover transition-transform duration-300 group-hover:scale-105"
             onClick={() => onZoom(artwork.images[idx])}
           />
 
@@ -184,7 +184,7 @@ export default function LinasoulPortfolio() {
             {artwork.available && (
               <Button
                 size="sm"
-                className="bg-[#f9f5ec] hover:bg-[#f2e8dc] text-gray-800"
+                className="bg-[#f9f5ec] text-gray-800 hover:bg-[#f2e8dc]"
                 onClick={() => {
                   onInquire(artwork.title)
                 }}
@@ -203,18 +203,20 @@ export default function LinasoulPortfolio() {
       {/* Navigation */}
       <nav className="fixed top-0 z-50 w-full border-b border-rose-100 bg-white/80 backdrop-blur-md">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="flex h-16 items-center">
-  <Link href="#home" className="inline-flex items-center">
-    <Image
-      src="/images/Logo_schwarz_2.png"
-      alt="Linasoul Logo"
-      width={120}
-      height={40}
-      priority
-      className="block"
-    />
-  </Link>
-</div>
+          {/* beide Blöcke in EINEM Flex-Wrapper */}
+          <div className="flex h-16 items-center justify-between">
+            <div className="flex h-16 items-center">
+              <Link href="#home" className="inline-flex h-16 items-center">
+                <Image
+                  src="/images/Logo_schwarz_2.png"
+                  alt="Linasoul Logo"
+                  width={120}
+                  height={40}
+                  priority
+                  className="block"
+                />
+              </Link>
+            </div>
             <div className="hidden space-x-8 md:flex">
               <a href="#home" className="text-gray-600 transition-colors hover:text-rose-400">
                 Home
@@ -249,13 +251,14 @@ export default function LinasoulPortfolio() {
 
         <div className="relative z-10 mx-auto max-w-4xl px-4 text-center">
           <Image
-  src="/images/Logo.png"
-  alt="Linasoul Logo"
-  width={400}
-  height={150}
-  priority
-  className="block mx-auto"
- />
+            src="/images/Logo.png"
+            alt="Linasoul Logo"
+            width={400}
+            height={150}
+            priority
+            className="mx-auto block"
+          />
+          <p className="mb-8 text-xl font-light text-gray-800 drop-shadow-md md:text-2xl">
             Abstract Acrylic Artist
           </p>
           <p className="mx-auto mb-12 max-w-2xl text-lg leading-relaxed text-gray-700 drop-shadow-md">
@@ -502,7 +505,7 @@ export default function LinasoulPortfolio() {
           <div className="text-center">
             <div className="mb-4 flex items-center justify-center">
               <Link href="#home" className="flex items-center justify-center">
-                <Image src="/images/Logo_schwarz_2.png" alt="Linasoul Logo" width={120} height={40} priority />
+                <Image src="/images/Logo_schwarz_2.png" alt="Linasoul Logo" width={120} height={40} priority className="block" />
               </Link>
             </div>
             <p className="mb-4 text-gray-400">Abstract Acrylic Artist • Creating art that touches the soul</p>
