@@ -1,19 +1,10 @@
 "use client"
 
+import type React from "react"
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import {
-  Mail,
-  Phone,
-  MapPin,
-  Heart,
-  Palette,
-  Send,
-  ChevronLeft,
-  ChevronRight,
-  X,
-} from "lucide-react"
+import { Mail, Phone, MapPin, Heart, Palette, Send, ChevronLeft, ChevronRight, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -28,7 +19,7 @@ type Artwork = {
   medium: string
   price: string
   available: boolean
-  images: string[] // mehrere Bilder pro Artwork
+  images: string[] // Mehrere Bilder pro Artwork
 }
 
 export default function LinasoulPortfolio() {
@@ -42,8 +33,6 @@ export default function LinasoulPortfolio() {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") setZoomSrc(null)
-      if (e.key === "ArrowUp") setZoomLevel((z) => Math.min(2, z + 0.2))
-      if (e.key === "ArrowDown") setZoomLevel((z) => Math.max(1, z - 0.2))
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
@@ -57,7 +46,7 @@ export default function LinasoulPortfolio() {
       medium: "Acrylic on Canvas",
       price: "$850",
       available: true,
-      images: ["/images/IMG_4634.jpeg", "/images/IMG_4643.jpeg", "/images/IMG_4646.jpeg"],
+      images: ["/images/IMG_4634.jpeg", "/images/IMG_4643.jpeg", "/images/IMG_4646.jpeg"], // mehrere Bilder
     },
     {
       id: 2,
@@ -86,37 +75,37 @@ export default function LinasoulPortfolio() {
       available: true,
       images: ["/images/abstract-background.jpeg"],
     },
+    {
+      id: 5,
+      title: "Forest Meditation",
+      size: '20" x 30"',
+      medium: "Acrylic on Canvas",
+      price: "$750",
+      available: true,
+      images: ["/placeholder.svg"],
+    },
+    {
+      id: 6,
+      title: "Cosmic Dance",
+      size: '32" x 44"',
+      medium: "Acrylic on Canvas",
+      price: "$1,400",
+      available: true,
+      images: ["/placeholder.svg"],
+    },
   ]
 
-  // vorbereitet: schickt Formdaten an /api/send-email (API baust du später)
-  const sendEmail = async (data: any) => {
-    try {
-      const res = await fetch("/api/send-email", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ ...data, to: "linasoul.art@gmx.de" }),
-      })
-      if (!res.ok) throw new Error("Mail send failed")
-    } catch (err) {
-      console.error(err)
-    }
-  }
-
-  const handleContactSubmit = async (e: React.FormEvent) => {
+  const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    await sendEmail({ subject: "Contact Form", ...contactForm })
-    setContactForm({ name: "", email: "", message: "" })
-    alert("Your message has been sent!")
+    console.log("Contact form submitted:", contactForm)
   }
 
-  const handleInquirySubmit = async (e: React.FormEvent) => {
+  const handleInquirySubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    await sendEmail({ subject: "Purchase Inquiry", ...inquiryForm })
-    setInquiryForm({ name: "", email: "", artwork: "", message: "" })
-    alert("Your inquiry has been sent!")
+    console.log("Inquiry form submitted:", inquiryForm)
   }
 
-  // Einzelne Artwork-Karte (mit Bild-Navigation + Zoom)
+  // Einzelne Artwork-Karte mit eigenem Bild-Index + Zoom
   function ArtworkCard({
     artwork,
     onInquire,
@@ -128,6 +117,7 @@ export default function LinasoulPortfolio() {
   }) {
     const [idx, setIdx] = useState(0)
     const hasMultiple = artwork.images.length > 1
+
     const prevImage = () => setIdx((p) => (p === 0 ? artwork.images.length - 1 : p - 1))
     const nextImage = () => setIdx((p) => (p === artwork.images.length - 1 ? 0 : p + 1))
 
@@ -143,6 +133,7 @@ export default function LinasoulPortfolio() {
             onClick={() => onZoom(artwork.images[idx])}
           />
 
+          {/* Pfeile nur zeigen, wenn mehrere Bilder vorhanden */}
           {hasMultiple && (
             <>
               <button
@@ -165,6 +156,8 @@ export default function LinasoulPortfolio() {
               >
                 <ChevronRight className="h-5 w-5 text-gray-700" />
               </button>
+
+              {/* kleine Indikatorpunkte */}
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
                 {artwork.images.map((_, i) => (
                   <span
@@ -192,7 +185,9 @@ export default function LinasoulPortfolio() {
               <Button
                 size="sm"
                 className="bg-[#f9f5ec] text-gray-800 hover:bg-[#f2e8dc]"
-                onClick={() => onInquire(artwork.title)}
+                onClick={() => {
+                  onInquire(artwork.title)
+                }}
               >
                 Inquire
               </Button>
@@ -205,58 +200,55 @@ export default function LinasoulPortfolio() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-rose-50 via-white to-blue-50">
-      {/* Navbar */}
-      <nav className="fixed top-0 w-full bg-white/80 backdrop-blur-md z-50 border-b border-rose-100">
-  <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-    <div className="flex justify-between items-center" style={{ height: "80px" }}>
-      {/* Logo links */}
-      <a href="#home" className="flex items-center h-full">
-        <Image
-          src="/images/Logo_schwarz_2.png"
-          alt="Linasoul Logo"
-          width={0}
-          height={0}
-          sizes="100vw"
-          style={{
-            height: "100%", // nimmt gesamte Höhe der Navbar
-            width: "auto",  // Breite proportional
-            objectFit: "contain",
-          }}
-          priority
-        />
-      </a>
+      {/* Navigation */}
+      <nav className="fixed top-0 z-50 w-full border-b border-rose-100 bg-white/80 backdrop-blur-md">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          {/* beide Blöcke in EINEM Flex-Wrapper */}
+          <div className="flex h-16 items-center justify-between">
+            <div className="flex h-16 items-center">
+              <Link href="#home" className="inline-flex h-16 items-center">
+                <Image
+                  src="/images/Logo_schwarz_2.png"
+                  alt="Linasoul Logo"
+                  width={120}
+                  height={40}
+                  priority
+                  className="block"
+                />
+              </Link>
+            </div>
+            <div className="hidden space-x-8 md:flex">
+              <a href="#home" className="text-gray-600 transition-colors hover:text-rose-400">
+                Home
+              </a>
+              <a href="#about" className="text-gray-600 transition-colors hover:text-rose-400">
+                About
+              </a>
+              <a href="#gallery" className="text-gray-600 transition-colors hover:text-rose-400">
+                Gallery
+              </a>
+              <a href="#purchase" className="text-gray-600 transition-colors hover:text-rose-400">
+                Purchase
+              </a>
+              <a href="#contact" className="text-gray-600 transition-colors hover:text-rose-400">
+                Contact
+              </a>
+            </div>
+          </div>
+        </div>
+      </nav>
 
-      {/* Navigation rechts */}
-      <div className="hidden md:flex space-x-8">
-        <a href="#home" className="text-gray-600 hover:text-rose-400 transition-colors">
-          Home
-        </a>
-        <a href="#about" className="text-gray-600 hover:text-rose-400 transition-colors">
-          About
-        </a>
-        <a href="#gallery" className="text-gray-600 hover:text-rose-400 transition-colors">
-          Gallery
-        </a>
-        <a href="#purchase" className="text-gray-600 hover:text-rose-400 transition-colors">
-          Purchase
-        </a>
-        <a href="#contact" className="text-gray-600 hover:text-rose-400 transition-colors">
-          Contact
-        </a>
-      </div>
-    </div>
-  </div>
-</nav>
-
-
-
-      {/* Hero */}
+      {/* Hero Section */}
       <section id="home" className="relative flex min-h-screen items-center justify-center overflow-hidden pt-16">
-        <div
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-60"
-          style={{ backgroundImage: "url('/images/abstract-background.jpeg')" }}
-        />
-        <div className="absolute inset-0 bg-white/20" />
+        {/* Abstract Painting Background */}
+        <div className="absolute inset-0">
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-60"
+            style={{ backgroundImage: "url('/images/abstract-background.jpeg')" }}
+          />
+          <div className="absolute inset-0 bg-white/20" />
+        </div>
+
         <div className="relative z-10 mx-auto max-w-4xl px-4 text-center">
           <Image
             src="/images/Logo.png"
@@ -283,7 +275,7 @@ export default function LinasoulPortfolio() {
         </div>
       </section>
 
-      {/* About the Artist */}
+      {/* About Section */}
       <section id="about" className="bg-white py-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-12 md:grid-cols-2">
@@ -291,7 +283,7 @@ export default function LinasoulPortfolio() {
               <h2 className="mb-6 text-4xl font-light text-gray-800">About the Artist</h2>
               <div className="space-y-4 leading-relaxed text-gray-600">
                 <p>
-                  Welcome to my world of abstract expression. I&apos;m Lina, and through my art, I explore the invisible
+                  Welcome to my world of abstract expression. I'm Lina, and through my art, I explore the invisible
                   connections between emotion, memory, and the natural world.
                 </p>
                 <p>
@@ -327,7 +319,7 @@ export default function LinasoulPortfolio() {
         </div>
       </section>
 
-      {/* Gallery */}
+      {/* Gallery Section */}
       <section id="gallery" className="bg-gradient-to-br from-blue-50 to-rose-50 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 text-center">
@@ -356,14 +348,12 @@ export default function LinasoulPortfolio() {
         </div>
       </section>
 
-      {/* Purchase Inquiry */}
+      {/* Purchase Inquiry Section */}
       <section id="purchase" className="bg-white py-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
             <h2 className="mb-4 text-4xl font-light text-gray-800">Purchase Inquiry</h2>
-            <p className="text-lg text-gray-600">
-              Interested in acquiring a piece? I&apos;d love to hear from you.
-            </p>
+            <p className="text-lg text-gray-600">Interested in acquiring a piece? I'd love to hear from you.</p>
           </div>
 
           <Card className="border-0 shadow-lg">
@@ -426,14 +416,15 @@ export default function LinasoulPortfolio() {
         </div>
       </section>
 
-      {/* Contact */}
+      {/* Contact Section */}
       <section id="contact" className="bg-gradient-to-br from-rose-50 to-blue-50 py-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-12 md:grid-cols-2">
             <div>
               <h2 className="mb-6 text-4xl font-light text-gray-800">Get in Touch</h2>
               <p className="mb-8 text-lg text-gray-600">
-                I&apos;d love to connect with fellow art enthusiasts, collectors, or anyone interested in commissioning a custom piece.
+                I'd love to connect with fellow art enthusiasts, collectors, or anyone interested in commissioning a
+                custom piece.
               </p>
 
               <div className="space-y-4">
@@ -454,7 +445,8 @@ export default function LinasoulPortfolio() {
               <div className="mt-8">
                 <h3 className="mb-4 text-lg font-medium text-gray-800">Studio Visits</h3>
                 <p className="text-gray-600">
-                  Private studio visits are available by appointment. Experience the artwork in person and learn about my creative process.
+                  Private studio visits are available by appointment. Experience the artwork in person and learn about
+                  my creative process.
                 </p>
               </div>
             </div>
@@ -472,6 +464,7 @@ export default function LinasoulPortfolio() {
                       required
                     />
                   </div>
+
                   <div>
                     <Label htmlFor="contact-email">Email</Label>
                     <Input
@@ -483,6 +476,7 @@ export default function LinasoulPortfolio() {
                       required
                     />
                   </div>
+
                   <div>
                     <Label htmlFor="contact-message">Message</Label>
                     <Textarea
@@ -494,6 +488,7 @@ export default function LinasoulPortfolio() {
                       required
                     />
                   </div>
+
                   <Button type="submit" className="w-full bg-[#f9f5ec] text-gray-800 hover:bg-[#f2e8dc]" size="lg">
                     Send Message
                   </Button>
@@ -510,19 +505,10 @@ export default function LinasoulPortfolio() {
           <div className="text-center">
             <div className="mb-4 flex items-center justify-center">
               <Link href="#home" className="flex items-center justify-center">
-                <Image
-                  src="/images/Logo_schwarz_2.png"
-                  alt="Linasoul Logo"
-                  width={120}
-                  height={40}
-                  priority
-                  className="block object-contain"
-                />
+                <Image src="/images/Logo_schwarz_2.png" alt="Linasoul Logo" width={120} height={40} priority className="block" />
               </Link>
             </div>
-            <p className="mb-4 text-gray-400">
-              Abstract Acrylic Artist • Creating art that touches the soul
-            </p>
+            <p className="mb-4 text-gray-400">Abstract Acrylic Artist • Creating art that touches the soul</p>
             <p className="text-sm text-gray-500">© 2024 Linasoul. All rights reserved.</p>
           </div>
         </div>
