@@ -2,7 +2,9 @@ import type { Metadata } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import "./globals.css"
-import Providers from "./Providers" // <— neu
+
+// Cart (global!)
+import { CartProvider } from "./cart/CartProvider"
 
 export const metadata: Metadata = {
   title: "v0 App",
@@ -25,7 +27,9 @@ html {
         `}</style>
       </head>
       <body>
-        <Providers>{children}</Providers>
+        <CartProvider>
+          {children}
+        </CartProvider>
       </body>
     </html>
   )
