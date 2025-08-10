@@ -384,8 +384,8 @@ export default function LinasoulPortfolio() {
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-4xl font-light text-gray-800">Galerie</h2>
             <p className="mx-auto max-w-2xl text-lg text-gray-600">
-              Meine Welt in Farbe: Tauche ein in meine neuesten abstrakten Gemälde. Lass Dich von den Geschichten
-              aus Farbe, Form und Textur verzaubern.
+              Meine Welt in Farbe: Tauche ein in meine neuesten abstrakten Gemälde. 
+              Lass Dich von den Geschichten aus Farbe, Form und Textur verzaubern.
             </p>
           </div>
 
@@ -455,7 +455,7 @@ export default function LinasoulPortfolio() {
                 </div>
 
                 <div>
-                  <Label htmlFor="inquiry-message">Message</Label>
+                  <Label htmlFor="inquiry-message">Nachricht</Label>
                   <Textarea
                     id="inquiry-message"
                     value={inquiryForm.message}
