@@ -271,7 +271,6 @@ export default function LinasoulPortfolio() {
               <div className="hidden md:flex items-center gap-4">
                 <a href="#about" className="text-gray-600 transition-colors hover:text-taupe-400">Künstler</a>
                 <a href="#gallery" className="text-gray-600 transition-colors hover:text-taupe-400">Galerie</a>
-                <a href="#purchase" className="text-gray-600 transition-colors hover:text-taupe-400">Kaufen</a>
                 <a href="#contact" className="text-gray-600 transition-colors hover:text-taupe-400">Kontakt</a>
                 <CartButton />
               </div>
@@ -310,7 +309,6 @@ export default function LinasoulPortfolio() {
               <nav className="space-y-4">
                 <a href="#about" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>Künstler</a>
                 <a href="#gallery" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>Galerie</a>
-                <a href="#purchase" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>Kaufen</a>
                 <a href="#contact" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>Kontakt</a>
               </nav>
             </div>
