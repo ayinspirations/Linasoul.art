@@ -1,59 +1,56 @@
-// app/api/stripe/webhook/route.ts
-import { headers } from "next/headers";
 import { NextResponse } from "next/server";
 import Stripe from "stripe";
 import { supabaseAdmin } from "@/lib/supabaseAdmin";
 
-export const runtime = "nodejs"; // Stripe SDK braucht Node
+export const runtime = "nodejs";
 
 const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY!;
 const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET!;
 
-const stripe = STRIPE_SECRET_KEY
-  ? new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2024-06-20" })
-  : (null as unknown as Stripe);
+const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2024-06-20" });
 
 export async function POST(req: Request) {
   try {
-    if (!stripe || !STRIPE_WEBHOOK_SECRET) {
-      console.warn("Stripe/Webhook not configured");
-      return NextResponse.json({ received: true }); // ruhig "acknowledgen"
-    }
+    const sig = req.headers.get("stripe-signature");
+    if (!sig) return NextResponse.json({ error: "Missing signature" }, { status: 400 });
 
-    const body = await req.text();
-    const sig = (await headers()).get("stripe-signature") || "";
-
+    const rawBody = await req.text();
     let event: Stripe.Event;
+
     try {
-      event = stripe.webhooks.constructEvent(body, sig, STRIPE_WEBHOOK_SECRET);
+      event = stripe.webhooks.constructEvent(rawBody, sig, STRIPE_WEBHOOK_SECRET);
     } catch (err: any) {
-      console.error("Webhook signature verification failed.", err?.message);
-      return new NextResponse("Bad signature", { status: 400 });
+      return NextResponse.json({ error: `Webhook signature verification failed: ${err.message}` }, { status: 400 });
     }
 
-    // Auf Completed Checkout reagieren
     if (event.type === "checkout.session.completed") {
       const session = event.data.object as Stripe.Checkout.Session;
-      const artworkId = session.metadata?.artwork_id;
 
-      if (artworkId) {
-        // Artwork auf "verkauft" setzen
+      // Optionaler Sicherheits-Check
+      if (session.payment_status !== "paid") {
+        return NextResponse.json({ ok: true });
+      }
+
+      const idsCsv = session.metadata?.artwork_ids_csv || "";
+      const ids = idsCsv.split(",").map((s) => s.trim()).filter(Boolean);
+
+      if (ids.length > 0) {
         const { error } = await supabaseAdmin
           .from("artworks")
           .update({ available: false })
-          .eq("id", artworkId);
+          .in("id", ids);
 
         if (error) {
-          console.error("Failed to mark artwork sold:", error.message);
-        } else {
-          console.log("Artwork sold:", artworkId);
+          console.error("Supabase update error:", error);
+          // 2xx an Stripe zurück, damit sie nicht endlos retrys schicken – aber wir loggen es
         }
       }
     }
 
     return NextResponse.json({ received: true });
   } catch (e: any) {
-    console.error(e);
-    return new NextResponse("Webhook handler error", { status: 500 });
+    console.error("Webhook error:", e);
+    // Stripe erwartet 2xx für "ok" oder 4xx/5xx für retry
+    return NextResponse.json({ error: "Webhook handler failed" }, { status: 400 });
   }
 }
