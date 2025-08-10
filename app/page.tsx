@@ -481,9 +481,9 @@ export default function LinasoulPortfolio() {
                   <span className="text-gray-600">Leonberg, Stuttgart</span>
                 </div>
               </div>
+            </div>
 
-      
-
+  
             <Card className="border-0 shadow-lg">
               <CardContent className="p-8">
                 <form onSubmit={handleContactSubmit} className="space-y-6">
