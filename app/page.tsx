@@ -485,40 +485,43 @@ export default function LinasoulPortfolio() {
       </footer>
 
       {/* Zoom Lightbox */}
-      {zoomSrc && (
-        <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 p-4"
-          onClick={() => {
-            setZoomSrc(null)
-            setZoomLevel(1)
-          }}
-        >
-          <button
-            aria-label="Close"
-            className="absolute right-4 top-4 rounded-full bg-white/90 p-2 shadow hover:bg-white"
-            onClick={(e) => {
-              e.stopPropagation()
-              setZoomSrc(null)
-              setZoomLevel(1)
-            }}
-          >
-            <X className="h-5 w-5 text-gray-800" />
-          </button>
+{zoomSrc && (
+  <div
+    className="fixed inset-0 z-[9990] flex items-center justify-center bg-black/80 p-4"
+    onClick={() => {
+      setZoomSrc(null)
+      setZoomLevel(1)
+    }}
+  >
+    {/* Close-Button ganz oben drüber */}
+    <button
+      aria-label="Close"
+      className="absolute right-4 top-4 z-[10000] rounded-full bg-white/90 p-2 shadow hover:bg-white"
+      onClick={(e) => {
+        e.stopPropagation()
+        setZoomSrc(null)
+        setZoomLevel(1)
+      }}
+    >
+      <X className="h-5 w-5 text-gray-800" />
+    </button>
 
-          <div className="max-h-full max-w-6xl overflow-auto">
-            <img
-              src={zoomSrc || ""}
-              alt="Zoomed artwork"
-              className="mx-auto block cursor-zoom-in transition-transform duration-200"
-              style={{ transform: `scale(${zoomLevel})`, transformOrigin: "center" }}
-              onClick={(e) => {
-                e.stopPropagation()
-                setZoomLevel((z) => (z === 1 ? 1.6 : 1))
-              }}
-            />
-          </div>
-        </div>
-      )}
+    {/* Bild-Wrapper */}
+    <div className="relative z-[9995] max-h-full max-w-6xl overflow-auto">
+      <img
+        src={zoomSrc}
+        alt="Zoomed artwork"
+        className="mx-auto block cursor-zoom-in transition-transform duration-200"
+        style={{ transform: `scale(${zoomLevel})`, transformOrigin: "center" }}
+        onClick={(e) => {
+          e.stopPropagation()
+          setZoomLevel((z) => (z === 1 ? 1.6 : 1))
+        }}
+      />
+    </div>
+  </div>
+)}
+
     </div>
   )
 }
