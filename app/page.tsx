@@ -320,7 +320,7 @@ export default function LinasoulPortfolio() {
       </section>
 
       {/* Gallery Section */}
-      <section id="gallery" className="bg-gradient-to-br from-blue-50 to-taupe-50 py-20">
+      <section id="gallery" className="bg-gradient-to-br from-taupe-50 to-taupe-100 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-4xl font-light text-gray-800">Gallery</h2>
