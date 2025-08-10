@@ -199,9 +199,9 @@ export default function LinasoulPortfolio() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-stone-50 via-white to-blue-50">
+    <div className="min-h-screen bg-gradient-to-br from-taupe-50 via-white to-blue-50">
       {/* Navigation */}
-      <nav className="fixed top-0 z-50 w-full border-b border-stone-100 bg-white/80 backdrop-blur-md">
+      <nav className="fixed top-0 z-50 w-full border-b border-taupe-100 bg-white/80 backdrop-blur-md">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* beide Blöcke in EINEM Flex-Wrapper */}
           <div className="flex h-16 items-center justify-between">
@@ -218,19 +218,19 @@ export default function LinasoulPortfolio() {
   </Link>
 </div>
             <div className="hidden space-x-8 md:flex">
-              <a href="#home" className="text-gray-600 transition-colors hover:text-stone-400">
+              <a href="#home" className="text-gray-600 transition-colors hover:text-taupe-400">
                 Home
               </a>
-              <a href="#about" className="text-gray-600 transition-colors hover:text-stone-400">
+              <a href="#about" className="text-gray-600 transition-colors hover:text-taupe-400">
                 About
               </a>
-              <a href="#gallery" className="text-gray-600 transition-colors hover:text-stone-400">
+              <a href="#gallery" className="text-gray-600 transition-colors hover:text-taupe-400">
                 Gallery
               </a>
-              <a href="#purchase" className="text-gray-600 transition-colors hover:text-stone-400">
+              <a href="#purchase" className="text-gray-600 transition-colors hover:text-taupe-400">
                 Purchase
               </a>
-              <a href="#contact" className="text-gray-600 transition-colors hover:text-stone-400">
+              <a href="#contact" className="text-gray-600 transition-colors hover:text-taupe-400">
                 Contact
               </a>
             </div>
@@ -297,7 +297,7 @@ export default function LinasoulPortfolio() {
                 </p>
               </div>
               <div className="mt-8 flex items-center space-x-4">
-                <Heart className="h-5 w-5 text-stone-400" />
+                <Heart className="h-5 w-5 text-taupe-400" />
                 <span className="text-gray-600">Creating art that touches the soul</span>
               </div>
             </div>
@@ -311,8 +311,8 @@ export default function LinasoulPortfolio() {
                   className="object-cover"
                 />
               </div>
-              <div className="absolute -bottom-6 -right-6 flex h-24 w-24 items-center justify-center rounded-full bg-stone-100">
-                <Palette className="h-8 w-8 text-stone-400" />
+              <div className="absolute -bottom-6 -right-6 flex h-24 w-24 items-center justify-center rounded-full bg-taupe-100">
+                <Palette className="h-8 w-8 text-taupe-400" />
               </div>
             </div>
           </div>
@@ -320,7 +320,7 @@ export default function LinasoulPortfolio() {
       </section>
 
       {/* Gallery Section */}
-      <section id="gallery" className="bg-gradient-to-br from-blue-50 to-stone-50 py-20">
+      <section id="gallery" className="bg-gradient-to-br from-blue-50 to-taupe-50 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-4xl font-light text-gray-800">Gallery</h2>
@@ -417,7 +417,7 @@ export default function LinasoulPortfolio() {
       </section>
 
       {/* Contact Section */}
-      <section id="contact" className="bg-gradient-to-br from-stone-50 to-blue-50 py-20">
+      <section id="contact" className="bg-gradient-to-br from-taupe-50 to-blue-50 py-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-12 md:grid-cols-2">
             <div>
@@ -429,15 +429,15 @@ export default function LinasoulPortfolio() {
 
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
-                  <Mail className="h-5 w-5 text-stone-400" />
+                  <Mail className="h-5 w-5 text-taupe-400" />
                   <span className="text-gray-600">hello@linasoul.art</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <Phone className="h-5 w-5 text-stone-400" />
+                  <Phone className="h-5 w-5 text-taupe-400" />
                   <span className="text-gray-600">+1 (555) 123-4567</span>
                 </div>
                 <div className="flex items-center space-x-3">
-                  <MapPin className="h-5 w-5 text-stone-400" />
+                  <MapPin className="h-5 w-5 text-taupe-400" />
                   <span className="text-gray-600">Portland, Oregon</span>
                 </div>
               </div>
