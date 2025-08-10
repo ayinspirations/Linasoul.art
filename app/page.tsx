@@ -253,71 +253,49 @@ export default function LinasoulPortfolio() {
         </div>
       </nav>
 
-      {/* Mobile Drawer */}
-<div
-  className={`fixed inset-0 z-50 md:hidden transition-opacity duration-300 ${
-    mobileOpen ? "opacity-100" : "pointer-events-none opacity-0"
-  }`}
-  aria-hidden={!mobileOpen}
->
-  {/* Overlay */}
+  {/* Right Drawer */}
+{mobileOpen && (
   <div
-    className="absolute inset-0 bg-black/40 backdrop-blur-sm"
+    className="fixed inset-0 z-50 flex justify-end bg-black/40"
     onClick={() => setMobileOpen(false)}
-  />
-
-  {/* Drawer Panel */}
-  <div
-    className={`absolute right-0 top-0 h-full w-72 max-w-full transform transition-transform duration-300 ease-in-out ${
-      mobileOpen ? "translate-x-0" : "translate-x-full"
-    } bg-white/80 backdrop-blur-xl shadow-2xl border-l border-white/50`}
   >
-    {/* Close Button */}
-    <div className="flex justify-end p-4">
-      <button
-        onClick={() => setMobileOpen(false)}
-        aria-label="Close menu"
-        className="text-gray-700 hover:text-taupe-700"
-      >
-        ✕
-      </button>
+    <div
+      className="w-64 bg-white/90 backdrop-blur-md rounded-l-2xl shadow-lg p-6 mt-16 mb-6 overflow-y-auto"
+      onClick={(e) => e.stopPropagation()}
+    >
+      <nav className="space-y-4">
+        <a
+          href="#about"
+          className="block text-lg text-gray-800 hover:text-taupe-600"
+          onClick={() => setMobileOpen(false)}
+        >
+          Künstler
+        </a>
+        <a
+          href="#gallery"
+          className="block text-lg text-gray-800 hover:text-taupe-600"
+          onClick={() => setMobileOpen(false)}
+        >
+          Galerie
+        </a>
+        <a
+          href="#purchase"
+          className="block text-lg text-gray-800 hover:text-taupe-600"
+          onClick={() => setMobileOpen(false)}
+        >
+          Kaufen
+        </a>
+        <a
+          href="#contact"
+          className="block text-lg text-gray-800 hover:text-taupe-600"
+          onClick={() => setMobileOpen(false)}
+        >
+          Kontakt
+        </a>
+      </nav>
     </div>
-
-    {/* Nav Links */}
-    <nav className="px-6 space-y-4">
-      <a
-        href="#about"
-        className="block text-lg font-medium text-gray-900 hover:text-taupe-700 transition-colors"
-        onClick={() => setMobileOpen(false)}
-      >
-        Artist
-      </a>
-      <a
-        href="#gallery"
-        className="block text-lg font-medium text-gray-900 hover:text-taupe-700 transition-colors"
-        onClick={() => setMobileOpen(false)}
-      >
-        Galerie
-      </a>
-      <a
-        href="#purchase"
-        className="block text-lg font-medium text-gray-900 hover:text-taupe-700 transition-colors"
-        onClick={() => setMobileOpen(false)}
-      >
-        Kaufen
-      </a>
-      <a
-        href="#contact"
-        className="block text-lg font-medium text-gray-900 hover:text-taupe-700 transition-colors"
-        onClick={() => setMobileOpen(false)}
-      >
-        Kontakt
-      </a>
-    </nav>
   </div>
-</div>
-
-
+)}
       {/* Hero Section */}
       <section
         id="home"
