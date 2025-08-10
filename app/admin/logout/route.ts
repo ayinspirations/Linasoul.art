@@ -1,13 +1,9 @@
-import { NextResponse } from "next/server"
+// app/admin/logout/route.ts
+import { NextResponse } from "next/server";
+import { cookies } from "next/headers";
 
 export async function POST() {
-  const res = NextResponse.json({ ok: true })
-  res.cookies.set("admin_auth", "", {
-    httpOnly: true,
-    secure: true,
-    sameSite: "lax",
-    path: "/",
-    maxAge: 0,
-  })
-  return res
+  cookies().delete("admin_auth");
+  return NextResponse.json({ ok: true });
 }
+
