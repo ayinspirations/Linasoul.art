@@ -1,19 +1,34 @@
+// app/api/admin/login/route.ts
 import { NextResponse } from "next/server"
 
-// sehr simpel: vergleicht ein Passwort aus dem Body mit ENV
 export async function POST(req: Request) {
-  const formData = await req.formData()
-  const password = String(formData.get("password") || "")
+  let password = ""
+  const ct = req.headers.get("content-type") || ""
 
-  if (!process.env.ADMIN_PASSWORD) {
+  try {
+    if (ct.includes("application/json")) {
+      const body = await req.json().catch(() => ({}))
+      password = String(body?.password ?? "")
+    } else {
+      const form = await req.formData().catch(() => null)
+      password = String(form?.get("password") ?? "")
+    }
+  } catch {
+    // ignore
+  }
+
+  const envPwdRaw = process.env.ADMIN_PASSWORD
+  if (!envPwdRaw) {
     return NextResponse.json({ error: "ADMIN_PASSWORD not set" }, { status: 500 })
   }
 
-  if (password !== process.env.ADMIN_PASSWORD) {
+  const envPwd = envPwdRaw.trim()
+  const got = password.trim()
+
+  if (got !== envPwd) {
     return NextResponse.json({ error: "Ungültiges Passwort" }, { status: 401 })
   }
 
-  // Cookie setzen (httpOnly)
   const res = NextResponse.json({ ok: true })
   res.cookies.set("admin", "1", {
     httpOnly: true,
