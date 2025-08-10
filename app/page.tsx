@@ -1,6 +1,5 @@
 "use client"
 
-import type React from "react"
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
@@ -11,97 +10,8 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
-import { useState } from "react"
 
-export default function AdminCreateArtwork() {
-  const [loading, setLoading] = useState(false)
-  const [message, setMessage] = useState<string | null>(null)
-
-  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    setLoading(true)
-    setMessage(null)
-
-    const form = new FormData(e.currentTarget)
-
-    try {
-      const res = await fetch("/api/admin/artworks", {
-        method: "POST",
-        body: form,
-      })
-
-      const json = await res.json()
-      if (!res.ok) {
-        setMessage(json?.error || "Fehler beim Speichern")
-      } else {
-        setMessage("Gespeichert 🎉")
-        e.currentTarget.reset()
-      }
-    } catch (err: any) {
-      setMessage(err?.message || "Fehler")
-    } finally {
-      setLoading(false)
-    }
-  }
-
-  return (
-    <main className="mx-auto max-w-2xl p-6">
-      <h1 className="mb-6 text-3xl font-light">Neues Artwork anlegen</h1>
-
-      <form onSubmit={onSubmit} className="space-y-4">
-        <div className="grid gap-4">
-          <label className="block">
-            <span className="text-sm text-gray-700">Titel</span>
-            <input name="title" required className="mt-1 w-full rounded border p-2" />
-          </label>
-
-          <label className="block">
-            <span className="text-sm text-gray-700">Beschreibung</span>
-            <textarea name="description" rows={4} className="mt-1 w-full rounded border p-2" />
-          </label>
-
-          <label className="block">
-            <span className="text-sm text-gray-700">Größe (Format: 24 x 36)</span>
-            <input name="size" placeholder="24 x 36" className="mt-1 w-full rounded border p-2" />
-          </label>
-
-          <div className="grid grid-cols-2 gap-4">
-            <label className="block">
-              <span className="text-sm text-gray-700">Preis</span>
-              <input name="price" type="number" min="0" step="0.01" placeholder="z.B. 850" className="mt-1 w-full rounded border p-2" />
-            </label>
-            <label className="block">
-              <span className="text-sm text-gray-700">Währung</span>
-              <input name="currency" defaultValue="EUR" className="mt-1 w-full rounded border p-2" />
-            </label>
-          </div>
-
-          <label className="inline-flex items-center gap-2">
-            <input type="checkbox" name="available" defaultChecked className="h-4 w-4" />
-            <span className="text-sm text-gray-700">Verfügbar</span>
-          </label>
-
-          <label className="block">
-            <span className="text-sm text-gray-700">Bilder (1–5 Dateien)</span>
-            <input name="images" type="file" multiple accept="image/*" className="mt-1 w-full" />
-          </label>
-        </div>
-
-        <button
-          type="submit"
-          disabled={loading}
-          className="rounded bg-black px-4 py-2 text-white disabled:opacity-50"
-        >
-          {loading ? "Speichert…" : "Speichern"}
-        </button>
-
-        {message && <p className="pt-2 text-sm text-gray-700">{message}</p>}
-      </form>
-    </main>
-  )
-}
-
-// ---------- Datentyp passend zu Supabase ----------
+// ---------- Types ----------
 type Artwork = {
   id: string
   title: string
@@ -110,7 +20,7 @@ type Artwork = {
   currency: string
   available: boolean
   images: string[]
-  size?: string 
+  size?: string
 }
 
 export default function LinasoulPortfolio() {
@@ -139,7 +49,7 @@ export default function LinasoulPortfolio() {
     return () => window.removeEventListener("keydown", onKey)
   }, [])
 
-  // --- ROBUSTES Laden + Normalisieren (fix für images.map Fehler) ---
+  // Laden + Normalisieren
   useEffect(() => {
     async function load() {
       try {
@@ -169,12 +79,13 @@ export default function LinasoulPortfolio() {
           imgs = (imgs || []).filter((u) => typeof u === "string" && u.trim().length > 0)
 
           return {
-            id: String(a.id ?? (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : Date.now().toString())),
+            id: String(a.id ?? crypto.randomUUID?.() ?? Date.now().toString()),
             title: String(a.title ?? "Untitled"),
             description: a.description ?? "",
             price_cents: Number(a.price_cents ?? 0),
             currency: String(a.currency ?? "eur"),
             available: Boolean(a.available ?? false),
+            size: a.size ? String(a.size) : "",          // <— size MITSCHICKEN
             images: imgs,
           }
         })
@@ -198,31 +109,24 @@ export default function LinasoulPortfolio() {
     console.log("Inquiry form submitted:", inquiryForm)
   }
 
-  // ---------- Beschreibung mit Mehr/Weniger ----------
+  // ---------- Beschreibung mit Mehr/Weniger (eine Zeile collapsed) ----------
   function ArtworkDescription({ text }: { text: string }) {
-  const [expanded, setExpanded] = useState(false)
-
-  // Zeige gar nichts, wenn kein Text da ist
-  if (!text?.trim()) return null
-
-  return (
-    <div className="mb-3">
-      {/* Ein Zeile in der Vorschau, kompletter Text wenn expanded */}
-      <p className={`text-gray-600 ${expanded ? "" : "truncate"}`}>
-        {text}
-      </p>
-
-      <button
-        type="button"
-        onClick={() => setExpanded((v) => !v)}
-        className="mt-1 text-sm underline text-gray-800 hover:text-gray-600"
-        aria-expanded={expanded}
-      >
-        {expanded ? "weniger" : "mehr"}
-      </button>
-    </div>
-  )
-}
+    const [expanded, setExpanded] = useState(false)
+    if (!text?.trim()) return null
+    return (
+      <div className="mb-3">
+        <p className={`text-gray-600 ${expanded ? "" : "line-clamp-1"}`}>{text}</p>
+        <button
+          type="button"
+          onClick={() => setExpanded((v) => !v)}
+          className="mt-1 text-sm underline text-gray-800 hover:text-gray-600"
+          aria-expanded={expanded}
+        >
+          {expanded ? "weniger" : "mehr"}
+        </button>
+      </div>
+    )
+  }
 
   // ---------- Einzelkarte ----------
   function ArtworkCard({
@@ -237,13 +141,15 @@ export default function LinasoulPortfolio() {
     const [idx, setIdx] = useState(0)
     const hasMultiple = (artwork.images?.length ?? 0) > 1
 
-    const prevImage = () => setIdx((p) => (p === 0 ? (artwork.images?.length ?? 1) - 1 : p - 1))
-    const nextImage = () => setIdx((p) => (p === (artwork.images?.length ?? 1) - 1 ? 0 : p + 1))
+    const prevImage = () =>
+      setIdx((p) => (p === 0 ? (artwork.images?.length ?? 1) - 1 : p - 1))
+    const nextImage = () =>
+      setIdx((p) => (p === (artwork.images?.length ?? 1) - 1 ? 0 : p + 1))
 
-    const priceFmt =
-      new Intl.NumberFormat("de-DE", { style: "currency", currency: (artwork.currency || "eur").toUpperCase() }).format(
-        (artwork.price_cents ?? 0) / 100
-      )
+    const priceFmt = new Intl.NumberFormat("de-DE", {
+      style: "currency",
+      currency: (artwork.currency || "eur").toUpperCase(),
+    }).format((artwork.price_cents ?? 0) / 100)
 
     return (
       <Card className="group overflow-hidden border-0 shadow-lg transition-all duration-300 hover:shadow-2xl">
@@ -296,11 +202,8 @@ export default function LinasoulPortfolio() {
               {artwork.available ? "Verfügbar" : "Verkauft"}
             </Badge>
           </div>
-          {/* Maße (immer anzeigen, wenn vorhanden) */}
-  {artwork.size ? (
-    <p className="mb-1 text-sm text-gray-500">{artwork.size}</p>
-  ) : null}
 
+          {artwork.size ? <p className="mb-1 text-sm text-gray-500">{artwork.size}</p> : null}
           {artwork.description ? <ArtworkDescription text={artwork.description} /> : null}
 
           <div className="flex items-center justify-between">
@@ -349,7 +252,7 @@ export default function LinasoulPortfolio() {
               <a href="#contact" className="text-gray-600 transition-colors hover:text-taupe-400">Kontakt</a>
             </div>
 
-            {/* Mobile Button (nur Icon) */}
+            {/* Mobile Button */}
             <button
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileOpen}
@@ -574,43 +477,37 @@ export default function LinasoulPortfolio() {
       </footer>
 
       {/* Zoom Lightbox */}
-{zoomSrc && (
-  <div
-    className="fixed inset-0 z-[9990] flex items-center justify-center bg-black/80 p-4"
-    onClick={() => {
-      setZoomSrc(null)
-      setZoomLevel(1)
-    }}
-  >
-    {/* Close-Button ganz oben drüber */}
-    <button
-      aria-label="Close"
-      className="absolute right-4 top-4 z-[10000] rounded-full bg-white/90 p-2 shadow hover:bg-white"
-      onClick={(e) => {
-        e.stopPropagation()
-        setZoomSrc(null)
-        setZoomLevel(1)
-      }}
-    >
-      <X className="h-5 w-5 text-gray-800" />
-    </button>
+      {zoomSrc && (
+        <div
+          className="fixed inset-0 z-[9990] flex items-center justify-center bg-black/80 p-4"
+          onClick={() => { setZoomSrc(null); setZoomLevel(1) }}
+        >
+          <button
+            aria-label="Close"
+            className="absolute right-4 top-4 z-[10000] rounded-full bg-white/90 p-2 shadow hover:bg-white"
+            onClick={(e) => {
+              e.stopPropagation()
+              setZoomSrc(null)
+              setZoomLevel(1)
+            }}
+          >
+            <X className="h-5 w-5 text-gray-800" />
+          </button>
 
-    {/* Bild-Wrapper */}
-    <div className="relative z-[9995] max-h-full max-w-6xl overflow-auto">
-      <img
-        src={zoomSrc}
-        alt="Zoomed artwork"
-        className="mx-auto block cursor-zoom-in transition-transform duration-200"
-        style={{ transform: `scale(${zoomLevel})`, transformOrigin: "center" }}
-        onClick={(e) => {
-          e.stopPropagation()
-          setZoomLevel((z) => (z === 1 ? 1.6 : 1))
-        }}
-      />
-    </div>
-  </div>
-)}
-
+          <div className="relative z-[9995] max-h-full max-w-6xl overflow-auto">
+            <img
+              src={zoomSrc!}
+              alt="Zoomed artwork"
+              className="mx-auto block cursor-zoom-in transition-transform duration-200"
+              style={{ transform: `scale(${zoomLevel})`, transformOrigin: "center" }}
+              onClick={(e) => {
+                e.stopPropagation()
+                setZoomLevel((z) => (z === 1 ? 1.6 : 1))
+              }}
+            />
+          </div>
+        </div>
+      )}
     </div>
   )
 }
