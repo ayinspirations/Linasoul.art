@@ -248,7 +248,6 @@ export default function LinasoulPortfolio() {
 
   // ---------- Seite ----------
   return (
-    <CartProvider>
       <div className="min-h-screen bg-gradient-to-br from-taupe-50 via-white to-blue-50">
         {/* Navigation */}
         <nav className="fixed top-0 z-50 w-full border-b border-taupe-100 bg-white/80 backdrop-blur-md">
@@ -490,6 +489,5 @@ export default function LinasoulPortfolio() {
           </div>
         )}
       </div>
-    </CartProvider>
   )
 }
