@@ -4,7 +4,7 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Mail, Phone, MapPin, Heart, Palette, Send, ChevronLeft, ChevronRight, X } from "lucide-react"
+import { Mail, Phone, MapPin, Heart, Palette, Send, ChevronLeft, ChevronRight, X, Menu } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -19,12 +19,15 @@ type Artwork = {
   medium: string
   price: string
   available: boolean
-  images: string[] // Mehrere Bilder pro Artwork
+  images: string[]
 }
 
 export default function LinasoulPortfolio() {
   const [contactForm, setContactForm] = useState({ name: "", email: "", message: "" })
   const [inquiryForm, setInquiryForm] = useState({ name: "", email: "", artwork: "", message: "" })
+
+  // Mobile menu
+  const [mobileOpen, setMobileOpen] = useState(false)
 
   // Zoom-Lightbox
   const [zoomSrc, setZoomSrc] = useState<string | null>(null)
@@ -32,7 +35,10 @@ export default function LinasoulPortfolio() {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      if (e.key === "Escape") setZoomSrc(null)
+      if (e.key === "Escape") {
+        setMobileOpen(false)
+        setZoomSrc(null)
+      }
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
@@ -46,7 +52,7 @@ export default function LinasoulPortfolio() {
       medium: "Acrylic on Canvas",
       price: "$850",
       available: true,
-      images: ["/images/IMG_4634.jpeg", "/images/IMG_4643.jpeg", "/images/IMG_4646.jpeg"], // mehrere Bilder
+      images: ["/images/IMG_4634.jpeg", "/images/IMG_4643.jpeg", "/images/IMG_4646.jpeg"],
     },
     {
       id: 2,
@@ -105,7 +111,6 @@ export default function LinasoulPortfolio() {
     console.log("Inquiry form submitted:", inquiryForm)
   }
 
-  // Einzelne Artwork-Karte mit eigenem Bild-Index + Zoom
   function ArtworkCard({
     artwork,
     onInquire,
@@ -117,7 +122,6 @@ export default function LinasoulPortfolio() {
   }) {
     const [idx, setIdx] = useState(0)
     const hasMultiple = artwork.images.length > 1
-
     const prevImage = () => setIdx((p) => (p === 0 ? artwork.images.length - 1 : p - 1))
     const nextImage = () => setIdx((p) => (p === artwork.images.length - 1 ? 0 : p + 1))
 
@@ -133,7 +137,6 @@ export default function LinasoulPortfolio() {
             onClick={() => onZoom(artwork.images[idx])}
           />
 
-          {/* Pfeile nur zeigen, wenn mehrere Bilder vorhanden */}
           {hasMultiple && (
             <>
               <button
@@ -157,13 +160,9 @@ export default function LinasoulPortfolio() {
                 <ChevronRight className="h-5 w-5 text-gray-700" />
               </button>
 
-              {/* kleine Indikatorpunkte */}
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
                 {artwork.images.map((_, i) => (
-                  <span
-                    key={i}
-                    className={`h-1.5 w-1.5 rounded-full ${i === idx ? "bg-white" : "bg-white/60"}`}
-                  />
+                  <span key={i} className={`h-1.5 w-1.5 rounded-full ${i === idx ? "bg-white" : "bg-white/60"}`} />
                 ))}
               </div>
             </>
@@ -185,9 +184,7 @@ export default function LinasoulPortfolio() {
               <Button
                 size="sm"
                 className="bg-[#f9f5ec] text-gray-800 hover:bg-[#f2e8dc]"
-                onClick={() => {
-                  onInquire(artwork.title)
-                }}
+                onClick={() => onInquire(artwork.title)}
               >
                 Inquire
               </Button>
@@ -205,21 +202,24 @@ export default function LinasoulPortfolio() {
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           {/* beide Blöcke in EINEM Flex-Wrapper */}
           <div className="flex h-16 items-center justify-between">
-            <div className="flex h-16 items-center mt-5"> {/* hier mt-1 oder mt-2 für mehr */}
-  <Link href="#home" className="inline-flex h-16 items-center">
-    <Image
-      src="/images/Logo_schwarz_2.png"
-      alt="Linasoul Logo"
-      width={120}
-      height={40}
-      priority
-      className="block"
-    />
-  </Link>
-</div>
+            {/* Logo (mit deinem mt-5 beibehalten) */}
+            <div className="flex h-16 items-center mt-5">
+              <Link href="#home" className="inline-flex h-16 items-center">
+                <Image
+                  src="/images/Logo_schwarz_2.png"
+                  alt="Linasoul Logo"
+                  width={120}
+                  height={40}
+                  priority
+                  className="block"
+                />
+              </Link>
+            </div>
+
+            {/* Desktop-Links */}
             <div className="hidden space-x-8 md:flex">
               <a href="#about" className="text-gray-600 transition-colors hover:text-taupe-400">
-                Artist
+                Künstler
               </a>
               <a href="#gallery" className="text-gray-600 transition-colors hover:text-taupe-400">
                 Galerie
@@ -231,13 +231,62 @@ export default function LinasoulPortfolio() {
                 Kontakt
               </a>
             </div>
+
+            {/* Mobile-Hamburger */}
+            <button
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileOpen}
+              onClick={() => setMobileOpen((v) => !v)}
+              className="md:hidden inline-flex items-center justify-center rounded-md border border-taupe-200 p-2 text-gray-700 hover:bg-white/70"
+            >
+              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
           </div>
         </div>
       </nav>
 
+      {/* Mobile Menu Panel */}
+      {mobileOpen && (
+        <div className="fixed top-16 inset-x-0 z-40 md:hidden bg-white/95 backdrop-blur border-b border-taupe-100 shadow">
+          <nav className="px-6 py-4 space-y-2">
+            <a
+              href="#about"
+              className="block py-2 text-lg text-gray-800 hover:text-taupe-600"
+              onClick={() => setMobileOpen(false)}
+            >
+              Artist
+            </a>
+            <a
+              href="#gallery"
+              className="block py-2 text-lg text-gray-800 hover:text-taupe-600"
+              onClick={() => setMobileOpen(false)}
+            >
+              Galerie
+            </a>
+            <a
+              href="#purchase"
+              className="block py-2 text-lg text-gray-800 hover:text-taupe-600"
+              onClick={() => setMobileOpen(false)}
+            >
+              Kaufen
+            </a>
+            <a
+              href="#contact"
+              className="block py-2 text-lg text-gray-800 hover:text-taupe-600"
+              onClick={() => setMobileOpen(false)}
+            >
+              Kontakt
+            </a>
+          </nav>
+        </div>
+      )}
+
       {/* Hero Section */}
-      <section id="home" className="relative flex min-h-screen items-center justify-center overflow-hidden"
-  style={{ paddingTop: "4rem" }}>
+      <section
+        id="home"
+        className="relative flex min-h-screen items-center justify-center overflow-hidden"
+        style={{ paddingTop: "4rem" }}
+      >
         {/* Abstract Painting Background */}
         <div className="absolute inset-0">
           <div
@@ -256,19 +305,17 @@ export default function LinasoulPortfolio() {
             priority
             className="mx-auto block"
           />
-          <p className="mb-8 text-xl font-light text-gray-800 drop-shadow-md md:text-2xl">
-            Abstract Acrylic Artist
-          </p>
+  
           <p className="mx-auto mb-12 max-w-2xl text-lg leading-relaxed text-gray-700 drop-shadow-md">
-            Exploring the depths of emotion through fluid forms and ethereal colors, creating pieces that speak to the
-            soul and inspire contemplation.
+            Fließende Formen und ätherische Farben, die die Seele berühren und zum Nachdenken anregen – 
+            Entdecke meine Kunst, die die tiefsten Emotionen hervorbringt
           </p>
           <Button
             size="lg"
             className="rounded-full bg-[#f9f5ec] px-8 py-3 text-gray-800 shadow-lg hover:bg-[#f2e8dc]"
             onClick={() => document.getElementById("gallery")?.scrollIntoView({ behavior: "smooth" })}
           >
-            View My Work
+            Zur Galerie
           </Button>
         </div>
       </section>
@@ -281,17 +328,16 @@ export default function LinasoulPortfolio() {
               <h2 className="mb-6 text-4xl font-light text-gray-800">About the Artist</h2>
               <div className="space-y-4 leading-relaxed text-gray-600">
                 <p>
-                  Welcome to my world of abstract expression. I'm Lina, and through my art, I explore the invisible
-                  connections between emotion, memory, and the natural world.
+                  Willkommen in meiner Welt der abstrakten Kunst! Ich bin Selina und meine Gemälde sind eine Reise 
+                  zu den unsichtbaren Verbindungen zwischen Gefühlen, Erinnerungen und der Natur.
                 </p>
                 <p>
-                  Each piece begins as an intuitive response to a feeling or moment in time. Using acrylic paints, I
-                  layer colors and textures to create depth and movement, allowing the painting to evolve organically on
-                  the canvas.
+                  Jedes Gemälde entsteht aus einer intuitiven Antwort auf ein Gefühl oder einen Augenblick. 
+                  Durch das Schichten von Acrylfarben und Texturen erzeuge ich Tiefe und Bewegung
+                  und lasse das Gemälde sich organisch auf der Leinwand entfalten.
                 </p>
                 <p>
-                  My work has been featured in galleries across the region, and I find deep joy in creating pieces that
-                  resonate with collectors who seek art that speaks to their inner landscape.
+                  Das Ergebnis sind lebendige und ausdrucksstarke Gemälde, die eine ganz eigene Geschichte erzählen.
                 </p>
               </div>
               <div className="mt-8 flex items-center space-x-4">
@@ -323,7 +369,8 @@ export default function LinasoulPortfolio() {
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-4xl font-light text-gray-800">Gallery</h2>
             <p className="mx-auto max-w-2xl text-lg text-gray-600">
-              Meine Welt in Farbe: Tauche ein in meine neuesten abstrakten Leinwandbilder. Lass Dich von den Geschichten aus Farbe, Form und Textur verzaubern.
+              Meine Welt in Farbe: Tauche ein in meine neuesten abstrakten Gemälde. Lass Dich von den Geschichten
+              aus Farbe, Form und Textur verzaubern.
             </p>
           </div>
 
@@ -351,7 +398,7 @@ export default function LinasoulPortfolio() {
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
             <h2 className="mb-4 text-4xl font-light text-gray-800">Purchase Inquiry</h2>
-            <p className="text-lg text-gray-600">Interested in acquiring a piece? I'd love to hear from you.</p>
+            <p className="text-lg text-gray-600">Hat eines meiner Werke Dein Herz berührt? Ich freue mich auf Deine Anfrage!</p>
           </div>
 
           <Card className="border-0 shadow-lg">
@@ -398,7 +445,7 @@ export default function LinasoulPortfolio() {
                     id="inquiry-message"
                     value={inquiryForm.message}
                     onChange={(e) => setInquiryForm((prev) => ({ ...prev, message: e.target.value }))}
-                    placeholder="Tell me about your interest in the piece, any questions you have, or if you'd like to schedule a viewing..."
+                    placeholder="Ich freue mich, mehr über Dein Interesse an dem Gemälde zu erfahren. Wenn Du Fragen hast oder weitere Bilder benötigst, melde Dich einfach..."
                     className="mt-1 min-h-[120px]"
                     required
                   />
@@ -406,7 +453,7 @@ export default function LinasoulPortfolio() {
 
                 <Button type="submit" className="w-full bg-[#f9f5ec] text-gray-800 hover:bg-[#f2e8dc]" size="lg">
                   <Send className="mr-2 h-4 w-4" />
-                  Send Inquiry
+                  Anfrage senden
                 </Button>
               </form>
             </CardContent>
@@ -419,35 +466,23 @@ export default function LinasoulPortfolio() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-12 md:grid-cols-2">
             <div>
-              <h2 className="mb-6 text-4xl font-light text-gray-800">Get in Touch</h2>
+              <h2 className="mb-6 text-4xl font-light text-gray-800">Kontakt Aufnehmen</h2>
               <p className="mb-8 text-lg text-gray-600">
-                I'd love to connect with fellow art enthusiasts, collectors, or anyone interested in commissioning a
-                custom piece.
+                Ich freue mich über Kontakte zu anderen Kunstliebhabern, Sammlern oder Interessenten an Auftragsarbeiten.
               </p>
 
               <div className="space-y-4">
                 <div className="flex items-center space-x-3">
                   <Mail className="h-5 w-5 text-taupe-400" />
-                  <span className="text-gray-600">hello@linasoul.art</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <Phone className="h-5 w-5 text-taupe-400" />
-                  <span className="text-gray-600">+1 (555) 123-4567</span>
+                  <span className="text-gray-600">linasoul.art@gmx.de</span>
                 </div>
                 <div className="flex items-center space-x-3">
                   <MapPin className="h-5 w-5 text-taupe-400" />
-                  <span className="text-gray-600">Portland, Oregon</span>
+                  <span className="text-gray-600">Leonberg, Stuttgart</span>
                 </div>
               </div>
 
-              <div className="mt-8">
-                <h3 className="mb-4 text-lg font-medium text-gray-800">Studio Visits</h3>
-                <p className="text-gray-600">
-                  Private studio visits are available by appointment. Experience the artwork in person and learn about
-                  my creative process.
-                </p>
-              </div>
-            </div>
+      
 
             <Card className="border-0 shadow-lg">
               <CardContent className="p-8">
@@ -476,19 +511,19 @@ export default function LinasoulPortfolio() {
                   </div>
 
                   <div>
-                    <Label htmlFor="contact-message">Message</Label>
+                    <Label htmlFor="contact-message">Nachricht</Label>
                     <Textarea
                       id="contact-message"
                       value={contactForm.message}
                       onChange={(e) => setContactForm((prev) => ({ ...prev, message: e.target.value }))}
-                      placeholder="Your message..."
+                      placeholder="Deine Nachricht..."
                       className="mt-1 min-h-[120px]"
                       required
                     />
                   </div>
 
                   <Button type="submit" className="w-full bg-[#f9f5ec] text-gray-800 hover:bg-[#f2e8dc]" size="lg">
-                    Send Message
+                    Anfrage senden
                   </Button>
                 </form>
               </CardContent>
@@ -502,20 +537,20 @@ export default function LinasoulPortfolio() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
             <div className="flex justify-center items-center h-16">
-  <Link href="#home" className="inline-flex items-center">
-    <Image
-      src="/images/Logo_weiss_2.png"
-      alt="Linasoul Logo"
-      width={120}
-      height={40}
-      priority
-      className="block"
-    />
-  </Link>
-</div>
+              <Link href="#home" className="inline-flex items-center">
+                <Image
+                  src="/images/Logo_weiss_2.png"
+                  alt="Linasoul Logo"
+                  width={120}
+                  height={40}
+                  priority
+                  className="block"
+                />
+              </Link>
+            </div>
 
             <p className="mb-4 text-gray-400">Abstract Acrylic Artist • Creating art that touches the soul</p>
-            <p className="text-sm text-gray-500">© 2024 Linasoul. All rights reserved.</p>
+            <p className="text-sm text-gray-500">© 2025 Linasoul.art</p>
           </div>
         </div>
       </footer>
