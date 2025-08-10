@@ -21,6 +21,7 @@ type Artwork = {
   currency: string
   available: boolean
   images: string[]
+  size?: string 
 }
 
 export default function LinasoulPortfolio() {
@@ -110,23 +111,29 @@ export default function LinasoulPortfolio() {
 
   // ---------- Beschreibung mit Mehr/Weniger ----------
   function ArtworkDescription({ text }: { text: string }) {
-    const [expanded, setExpanded] = useState(false)
-    const short = text.length > 180 ? text.slice(0, 180) + "…" : text
-    return (
-      <p className="mb-3 text-gray-600">
-        {expanded ? text : short}{" "}
-        {text.length > 180 && (
-          <button
-            type="button"
-            onClick={() => setExpanded((v) => !v)}
-            className="underline text-gray-800 hover:text-gray-600"
-          >
-            {expanded ? "weniger" : "mehr"}
-          </button>
-        )}
+  const [expanded, setExpanded] = useState(false)
+
+  // Zeige gar nichts, wenn kein Text da ist
+  if (!text?.trim()) return null
+
+  return (
+    <div className="mb-3">
+      {/* Ein Zeile in der Vorschau, kompletter Text wenn expanded */}
+      <p className={`text-gray-600 ${expanded ? "" : "truncate"}`}>
+        {text}
       </p>
-    )
-  }
+
+      <button
+        type="button"
+        onClick={() => setExpanded((v) => !v)}
+        className="mt-1 text-sm underline text-gray-800 hover:text-gray-600"
+        aria-expanded={expanded}
+      >
+        {expanded ? "weniger" : "mehr"}
+      </button>
+    </div>
+  )
+}
 
   // ---------- Einzelkarte ----------
   function ArtworkCard({
@@ -200,6 +207,10 @@ export default function LinasoulPortfolio() {
               {artwork.available ? "Verfügbar" : "Verkauft"}
             </Badge>
           </div>
+          {/* Maße (immer anzeigen, wenn vorhanden) */}
+  {artwork.size ? (
+    <p className="mb-1 text-sm text-gray-500">{artwork.size}</p>
+  ) : null}
 
           {artwork.description ? <ArtworkDescription text={artwork.description} /> : null}
 
