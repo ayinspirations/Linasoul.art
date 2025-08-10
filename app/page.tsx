@@ -392,56 +392,16 @@ export default function LinasoulPortfolio() {
           </div>
         </section>
 
-        {/* Purchase Inquiry */}
-        <section id="purchase" className="bg-white py-20">
-          <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-12 text-center">
-              <h2 className="mb-4 text-4xl font-light text-gray-800">Kaufanfrage</h2>
-              <p className="text-lg text-gray-600">Hat eines meiner Werke Dein Herz berührt? Ich freue mich auf Deine Anfrage!</p>
-            </div>
-
-            <Card className="border-0 shadow-lg">
-              <CardContent className="p-8">
-                <form onSubmit={handleInquirySubmit} className="space-y-6">
-                  <div className="grid gap-6 md:grid-cols-2">
-                    <div>
-                      <Label htmlFor="inquiry-name">Name</Label>
-                      <Input id="inquiry-name" value={inquiryForm.name} onChange={(e) => setInquiryForm((prev) => ({ ...prev, name: e.target.value }))} className="mt-1" required />
-                    </div>
-                    <div>
-                      <Label htmlFor="inquiry-email">Email</Label>
-                      <Input id="inquiry-email" type="email" value={inquiryForm.email} onChange={(e) => setInquiryForm((prev) => ({ ...prev, email: e.target.value }))} className="mt-1" required />
-                    </div>
-                  </div>
-
-                  <div>
-                    <Label htmlFor="artwork-interest">Kunstwerk von Interesse</Label>
-                    <Input id="artwork-interest" value={inquiryForm.artwork} onChange={(e) => setInquiryForm((prev) => ({ ...prev, artwork: e.target.value }))} placeholder="Titel eingeben oder Wunsch beschreiben" className="mt-1" />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="inquiry-message">Nachricht</Label>
-                    <Textarea id="inquiry-message" value={inquiryForm.message} onChange={(e) => setInquiryForm((prev) => ({ ...prev, message: e.target.value }))} placeholder="Ich freue mich, mehr über Dein Interesse zu erfahren …" className="mt-1 min-h-[120px]" required />
-                  </div>
-
-                  <Button type="submit" className="w-full bg-[#f9f5ec] text-gray-800 hover:bg-[#f2e8dc]" size="lg">
-                    <Send className="mr-2 h-4 w-4" />
-                    Anfrage senden
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
-        </section>
+      
 
         {/* Contact */}
         <section id="contact" className="bg-gradient-to-br from-taupe-50 to-blue-50 py-20">
           <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
             <div className="grid gap-12 md:grid-cols-2">
               <div>
-                <h2 className="mb-6 text-4xl font-light text-gray-800">Kontakt Aufnehmen</h2>
+                <h2 className="mb-6 text-4xl font-light text-gray-800">Kontaktanfrage</h2>
                 <p className="mb-8 text-lg text-gray-600">
-                  Ich freue mich über Kontakte zu anderen Kunstliebhabern, Sammlern oder Interessenten an Auftragsarbeiten.
+                  Hat eines meiner Werke Dein Herz berührt? Ich freue mich auf Deine Anfrage!
                 </p>
 
                 <div className="space-y-4">
