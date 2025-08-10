@@ -212,7 +212,7 @@ export default function LinasoulPortfolio() {
           <div className="mb-2 flex items-start justify-between">
             <h3 className="text-xl font-medium text-gray-800">{artwork.title}</h3>
             <Badge variant={artwork.available ? "default" : "secondary"} className="ml-2">
-              {artwork.available ? "Verfügbar" : "Verkauft"}
+              {artwork.available ? "Verfügbar" : "Nicht Verfügbar"}
             </Badge>
           </div>
 
@@ -238,7 +238,7 @@ export default function LinasoulPortfolio() {
                 In den Warenkorb
               </Button>
             ) : (
-              <span className="text-sm text-gray-500">Verkauft</span>
+              <span className="text-sm text-gray-500">Nicht Verfügbar</span>
             )}
           </div>
         </CardContent>
