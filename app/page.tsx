@@ -49,11 +49,53 @@ export default function LinasoulPortfolio() {
     return () => window.removeEventListener("keydown", onKey)
   }, [])
 
+  // --- ROBUSTES Laden + Normalisieren (fix für images.map Fehler) ---
   useEffect(() => {
-    fetch("/api/artworks")
-      .then((res) => res.json())
-      .then((json) => setArtworks(json.artworks ?? []))
-      .catch(console.error)
+    async function load() {
+      try {
+        const res = await fetch("/api/artworks", { cache: "no-store" })
+        const json = await res.json()
+        const arr = Array.isArray(json?.artworks) ? json.artworks : []
+
+        const safe: Artwork[] = arr.map((a: any) => {
+          // images robust normalisieren
+          let imgs: string[] = []
+          try {
+            if (Array.isArray(a?.images)) {
+              imgs = a.images.map(String)
+            } else if (typeof a?.images === "string") {
+              try {
+                const parsed = JSON.parse(a.images)
+                imgs = Array.isArray(parsed) ? parsed.map(String) : [String(a.images)]
+              } catch {
+                imgs = [String(a.images)]
+              }
+            } else if (a?.images && typeof a.images === "object" && typeof a.images.url === "string") {
+              imgs = [String(a.images.url)]
+            }
+          } catch {
+            imgs = []
+          }
+          imgs = (imgs || []).filter((u) => typeof u === "string" && u.trim().length > 0)
+
+          return {
+            id: String(a.id ?? (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : Date.now().toString())),
+            title: String(a.title ?? "Untitled"),
+            description: a.description ?? "",
+            price_cents: Number(a.price_cents ?? 0),
+            currency: String(a.currency ?? "eur"),
+            available: Boolean(a.available ?? false),
+            images: imgs,
+          }
+        })
+
+        setArtworks(safe)
+      } catch (e) {
+        console.error(e)
+        setArtworks([])
+      }
+    }
+    load()
   }, [])
 
   const handleContactSubmit = (e: React.FormEvent) => {
@@ -97,18 +139,21 @@ export default function LinasoulPortfolio() {
     onZoom: (src: string) => void
   }) {
     const [idx, setIdx] = useState(0)
-    const hasMultiple = artwork.images?.length > 1
+    const hasMultiple = (artwork.images?.length ?? 0) > 1
 
     const prevImage = () => setIdx((p) => (p === 0 ? (artwork.images?.length ?? 1) - 1 : p - 1))
     const nextImage = () => setIdx((p) => (p === (artwork.images?.length ?? 1) - 1 ? 0 : p + 1))
 
-    const price = `${(artwork.price_cents / 100).toFixed(2)} ${artwork.currency?.toUpperCase() || "EUR"}`
+    const priceFmt =
+      new Intl.NumberFormat("de-DE", { style: "currency", currency: (artwork.currency || "eur").toUpperCase() }).format(
+        (artwork.price_cents ?? 0) / 100
+      )
 
     return (
       <Card className="group overflow-hidden border-0 shadow-lg transition-all duration-300 hover:shadow-2xl">
         <div className="relative aspect-[3/4] overflow-hidden">
           <Image
-            src={(artwork.images && artwork.images[idx]) || "/placeholder.svg"}
+            src={artwork.images && artwork.images[idx] ? artwork.images[idx] : "/placeholder.svg"}
             alt={artwork.title}
             width={400}
             height={600}
@@ -140,7 +185,7 @@ export default function LinasoulPortfolio() {
               </button>
 
               <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                {artwork.images.map((_, i) => (
+                {(artwork.images || []).map((_, i) => (
                   <span key={i} className={`h-1.5 w-1.5 rounded-full ${i === idx ? "bg-white" : "bg-white/60"}`} />
                 ))}
               </div>
@@ -159,7 +204,7 @@ export default function LinasoulPortfolio() {
           {artwork.description ? <ArtworkDescription text={artwork.description} /> : null}
 
           <div className="flex items-center justify-between">
-            <span className="text-lg font-medium text-black">{price}</span>
+            <span className="text-lg font-medium text-black">{priceFmt}</span>
             {artwork.available ? (
               <Button
                 size="sm"
@@ -198,21 +243,13 @@ export default function LinasoulPortfolio() {
 
             {/* Desktop */}
             <div className="hidden space-x-8 md:flex">
-              <a href="#about" className="text-gray-600 transition-colors hover:text-taupe-400">
-                Künstler
-              </a>
-              <a href="#gallery" className="text-gray-600 transition-colors hover:text-taupe-400">
-                Galerie
-              </a>
-              <a href="#purchase" className="text-gray-600 transition-colors hover:text-taupe-400">
-                Kaufen
-              </a>
-              <a href="#contact" className="text-gray-600 transition-colors hover:text-taupe-400">
-                Kontakt
-              </a>
+              <a href="#about" className="text-gray-600 transition-colors hover:text-taupe-400">Künstler</a>
+              <a href="#gallery" className="text-gray-600 transition-colors hover:text-taupe-400">Galerie</a>
+              <a href="#purchase" className="text-gray-600 transition-colors hover:text-taupe-400">Kaufen</a>
+              <a href="#contact" className="text-gray-600 transition-colors hover:text-taupe-400">Kontakt</a>
             </div>
 
-            {/* Mobile Button (nur Icon, keine Umrandung) */}
+            {/* Mobile Button (nur Icon) */}
             <button
               aria-label={mobileOpen ? "Close menu" : "Open menu"}
               aria-expanded={mobileOpen}
@@ -241,18 +278,10 @@ export default function LinasoulPortfolio() {
             onClick={(e) => e.stopPropagation()}
           >
             <nav className="space-y-4">
-              <a href="#about" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>
-                Künstler
-              </a>
-              <a href="#gallery" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>
-                Galerie
-              </a>
-              <a href="#purchase" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>
-                Kaufen
-              </a>
-              <a href="#contact" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>
-                Kontakt
-              </a>
+              <a href="#about" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>Künstler</a>
+              <a href="#gallery" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>Galerie</a>
+              <a href="#purchase" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>Kaufen</a>
+              <a href="#contact" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>Kontakt</a>
             </nav>
           </div>
         </div>
@@ -287,15 +316,8 @@ export default function LinasoulPortfolio() {
             <div>
               <h2 className="mb-6 text-4xl font-light text-gray-800">Über die Künstlerin</h2>
               <div className="space-y-4 leading-relaxed text-gray-600">
-                <p>
-                  Willkommen in meiner Welt der abstrakten Kunst! Ich bin Selina und meine Gemälde sind eine Reise
-                  zu den unsichtbaren Verbindungen zwischen Gefühlen, Erinnerungen und der Natur.
-                </p>
-                <p>
-                  Jedes Gemälde entsteht aus einer intuitiven Antwort auf ein Gefühl oder einen Augenblick.
-                  Durch das Schichten von Acrylfarben und Texturen erzeuge ich Tiefe und Bewegung
-                  und lasse das Gemälde sich organisch auf der Leinwand entfalten.
-                </p>
+                <p>Willkommen in meiner Welt der abstrakten Kunst! Ich bin Selina und meine Gemälde sind eine Reise zu den unsichtbaren Verbindungen zwischen Gefühlen, Erinnerungen und der Natur.</p>
+                <p>Jedes Gemälde entsteht aus einer intuitiven Antwort auf ein Gefühl oder einen Augenblick. Durch das Schichten von Acrylfarben und Texturen erzeuge ich Tiefe und Bewegung und lasse das Gemälde sich organisch auf der Leinwand entfalten.</p>
                 <p>Das Ergebnis sind lebendige und ausdrucksstarke Gemälde, die eine ganz eigene Geschichte erzählen.</p>
               </div>
               <div className="mt-8 flex items-center space-x-4">
@@ -321,8 +343,7 @@ export default function LinasoulPortfolio() {
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-4xl font-light text-gray-800">Galerie</h2>
             <p className="mx-auto max-w-2xl text-lg text-gray-600">
-              Meine Welt in Farbe: Tauche ein in meine neuesten abstrakten Gemälde. Lass Dich von den Geschichten
-              aus Farbe, Form und Textur verzaubern.
+              Meine Welt in Farbe: Tauche ein in meine neuesten abstrakten Gemälde. Lass Dich von den Geschichten aus Farbe, Form und Textur verzaubern.
             </p>
           </div>
 
@@ -350,9 +371,7 @@ export default function LinasoulPortfolio() {
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
             <h2 className="mb-4 text-4xl font-light text-gray-800">Kaufanfrage</h2>
-            <p className="text-lg text-gray-600">
-              Hat eines meiner Werke Dein Herz berührt? Ich freue mich auf Deine Anfrage!
-            </p>
+            <p className="text-lg text-gray-600">Hat eines meiner Werke Dein Herz berührt? Ich freue mich auf Deine Anfrage!</p>
           </div>
 
           <Card className="border-0 shadow-lg">
@@ -361,48 +380,22 @@ export default function LinasoulPortfolio() {
                 <div className="grid gap-6 md:grid-cols-2">
                   <div>
                     <Label htmlFor="inquiry-name">Name</Label>
-                    <Input
-                      id="inquiry-name"
-                      value={inquiryForm.name}
-                      onChange={(e) => setInquiryForm((prev) => ({ ...prev, name: e.target.value }))}
-                      className="mt-1"
-                      required
-                    />
+                    <Input id="inquiry-name" value={inquiryForm.name} onChange={(e) => setInquiryForm((prev) => ({ ...prev, name: e.target.value }))} className="mt-1" required />
                   </div>
                   <div>
                     <Label htmlFor="inquiry-email">Email</Label>
-                    <Input
-                      id="inquiry-email"
-                      type="email"
-                      value={inquiryForm.email}
-                      onChange={(e) => setInquiryForm((prev) => ({ ...prev, email: e.target.value }))}
-                      className="mt-1"
-                      required
-                    />
+                    <Input id="inquiry-email" type="email" value={inquiryForm.email} onChange={(e) => setInquiryForm((prev) => ({ ...prev, email: e.target.value }))} className="mt-1" required />
                   </div>
                 </div>
 
                 <div>
                   <Label htmlFor="artwork-interest">Kunstwerk von Interesse</Label>
-                  <Input
-                    id="artwork-interest"
-                    value={inquiryForm.artwork}
-                    onChange={(e) => setInquiryForm((prev) => ({ ...prev, artwork: e.target.value }))}
-                    placeholder="Titel eingeben oder Wunsch beschreiben"
-                    className="mt-1"
-                  />
+                  <Input id="artwork-interest" value={inquiryForm.artwork} onChange={(e) => setInquiryForm((prev) => ({ ...prev, artwork: e.target.value }))} placeholder="Titel eingeben oder Wunsch beschreiben" className="mt-1" />
                 </div>
 
                 <div>
                   <Label htmlFor="inquiry-message">Nachricht</Label>
-                  <Textarea
-                    id="inquiry-message"
-                    value={inquiryForm.message}
-                    onChange={(e) => setInquiryForm((prev) => ({ ...prev, message: e.target.value }))}
-                    placeholder="Ich freue mich über Deine Nachricht …"
-                    className="mt-1 min-h-[120px]"
-                    required
-                  />
+                  <Textarea id="inquiry-message" value={inquiryForm.message} onChange={(e) => setInquiryForm((prev) => ({ ...prev, message: e.target.value }))} placeholder="Ich freue mich, mehr über Dein Interesse zu erfahren …" className="mt-1 min-h-[120px]" required />
                 </div>
 
                 <Button type="submit" className="w-full bg-[#f9f5ec] text-gray-800 hover:bg-[#f2e8dc]" size="lg">
@@ -442,37 +435,17 @@ export default function LinasoulPortfolio() {
                 <form onSubmit={handleContactSubmit} className="space-y-6">
                   <div>
                     <Label htmlFor="contact-name">Name</Label>
-                    <Input
-                      id="contact-name"
-                      value={contactForm.name}
-                      onChange={(e) => setContactForm((prev) => ({ ...prev, name: e.target.value }))}
-                      className="mt-1"
-                      required
-                    />
+                    <Input id="contact-name" value={contactForm.name} onChange={(e) => setContactForm((prev) => ({ ...prev, name: e.target.value }))} className="mt-1" required />
                   </div>
 
                   <div>
                     <Label htmlFor="contact-email">Email</Label>
-                    <Input
-                      id="contact-email"
-                      type="email"
-                      value={contactForm.email}
-                      onChange={(e) => setContactForm((prev) => ({ ...prev, email: e.target.value }))}
-                      className="mt-1"
-                      required
-                    />
+                    <Input id="contact-email" type="email" value={contactForm.email} onChange={(e) => setContactForm((prev) => ({ ...prev, email: e.target.value }))} className="mt-1" required />
                   </div>
 
                   <div>
                     <Label htmlFor="contact-message">Nachricht</Label>
-                    <Textarea
-                      id="contact-message"
-                      value={contactForm.message}
-                      onChange={(e) => setContactForm((prev) => ({ ...prev, message: e.target.value }))}
-                      placeholder="Deine Nachricht..."
-                      className="mt-1 min-h-[120px]"
-                      required
-                    />
+                    <Textarea id="contact-message" value={contactForm.message} onChange={(e) => setContactForm((prev) => ({ ...prev, message: e.target.value }))} placeholder="Deine Nachricht..." className="mt-1 min-h-[120px]" required />
                   </div>
 
                   <Button type="submit" className="w-full bg-[#f9f5ec] text-gray-800 hover:bg-[#f2e8dc]" size="lg">
@@ -523,7 +496,7 @@ export default function LinasoulPortfolio() {
 
           <div className="max-h-full max-w-6xl overflow-auto">
             <img
-              src={zoomSrc}
+              src={zoomSrc || ""}
               alt="Zoomed artwork"
               className="mx-auto block cursor-zoom-in transition-transform duration-200"
               style={{ transform: `scale(${zoomLevel})`, transformOrigin: "center" }}
