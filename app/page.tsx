@@ -323,7 +323,7 @@ export default function LinasoulPortfolio() {
   
           <p className="mx-auto mb-12 max-w-2xl text-lg leading-relaxed text-gray-700 drop-shadow-md">
             Fließende Formen und ätherische Farben, die die Seele berühren und zum Nachdenken anregen – 
-            Entdecke meine Kunst, die die tiefsten Emotionen hervorbringt
+            Entdecke meine Kunst der tiefsten Emotionen.
           </p>
           <Button
             size="lg"
@@ -340,7 +340,7 @@ export default function LinasoulPortfolio() {
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-12 md:grid-cols-2">
             <div>
-              <h2 className="mb-6 text-4xl font-light text-gray-800">About the Artist</h2>
+              <h2 className="mb-6 text-4xl font-light text-gray-800">Über die Künstlerin</h2>
               <div className="space-y-4 leading-relaxed text-gray-600">
                 <p>
                   Willkommen in meiner Welt der abstrakten Kunst! Ich bin Selina und meine Gemälde sind eine Reise 
@@ -382,7 +382,7 @@ export default function LinasoulPortfolio() {
       <section id="gallery" className="bg-gradient-to-br from-taupe-50 to-taupe-100 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 text-center">
-            <h2 className="mb-4 text-4xl font-light text-gray-800">Gallery</h2>
+            <h2 className="mb-4 text-4xl font-light text-gray-800">Galerie</h2>
             <p className="mx-auto max-w-2xl text-lg text-gray-600">
               Meine Welt in Farbe: Tauche ein in meine neuesten abstrakten Gemälde. Lass Dich von den Geschichten
               aus Farbe, Form und Textur verzaubern.
@@ -412,7 +412,7 @@ export default function LinasoulPortfolio() {
       <section id="purchase" className="bg-white py-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
-            <h2 className="mb-4 text-4xl font-light text-gray-800">Purchase Inquiry</h2>
+            <h2 className="mb-4 text-4xl font-light text-gray-800">Kaufanfrage</h2>
             <p className="text-lg text-gray-600">Hat eines meiner Werke Dein Herz berührt? Ich freue mich auf Deine Anfrage!</p>
           </div>
 
@@ -444,7 +444,7 @@ export default function LinasoulPortfolio() {
                 </div>
 
                 <div>
-                  <Label htmlFor="artwork-interest">Artwork of Interest</Label>
+                  <Label htmlFor="artwork-interest">Kunstwerk von Interesse</Label>
                   <Input
                     id="artwork-interest"
                     value={inquiryForm.artwork}
