@@ -218,20 +218,17 @@ export default function LinasoulPortfolio() {
   </Link>
 </div>
             <div className="hidden space-x-8 md:flex">
-              <a href="#home" className="text-gray-600 transition-colors hover:text-taupe-400">
-                Home
-              </a>
               <a href="#about" className="text-gray-600 transition-colors hover:text-taupe-400">
-                About
+                Artist
               </a>
               <a href="#gallery" className="text-gray-600 transition-colors hover:text-taupe-400">
-                Gallery
+                Galerie
               </a>
               <a href="#purchase" className="text-gray-600 transition-colors hover:text-taupe-400">
-                Purchase
+                Kaufen
               </a>
               <a href="#contact" className="text-gray-600 transition-colors hover:text-taupe-400">
-                Contact
+                Kontakt
               </a>
             </div>
           </div>
@@ -325,7 +322,7 @@ export default function LinasoulPortfolio() {
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-4xl font-light text-gray-800">Gallery</h2>
             <p className="mx-auto max-w-2xl text-lg text-gray-600">
-              A collection of my recent works, each piece telling its own story through color, texture, and form.
+              Meine Welt in Farbe: Tauche ein in meine neuesten abstrakten Leinwandbilder. Lass Dich von den Geschichten aus Farbe, Form und Textur verzaubern.
             </p>
           </div>
 
