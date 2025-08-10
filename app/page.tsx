@@ -236,7 +236,8 @@ export default function LinasoulPortfolio() {
       </nav>
 
       {/* Hero Section */}
-      <section id="home" className="relative flex min-h-screen items-center justify-center overflow-hidden pt-16">
+      <section id="home" className="relative flex min-h-screen items-center justify-center overflow-hidden"
+  style={{ paddingTop: "4rem" }}>
         {/* Abstract Painting Background */}
         <div className="absolute inset-0">
           <div
@@ -500,10 +501,10 @@ export default function LinasoulPortfolio() {
       <footer className="bg-gray-800 py-12 text-white">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <div className="flex h-16 items-center mt-1"> {/* hier mt-1 oder mt-2 für mehr */}
-  <Link href="#home" className="inline-flex h-16 items-center">
+            <div className="flex justify-center items-center h-16">
+  <Link href="#home" className="inline-flex items-center">
     <Image
-      src="/images/Logo_schwarz_2.png"
+      src="/images/Logo_weiss_2.png"
       alt="Linasoul Logo"
       width={120}
       height={40}
@@ -512,6 +513,7 @@ export default function LinasoulPortfolio() {
     />
   </Link>
 </div>
+
             <p className="mb-4 text-gray-400">Abstract Acrylic Artist • Creating art that touches the soul</p>
             <p className="text-sm text-gray-500">© 2024 Linasoul. All rights reserved.</p>
           </div>
