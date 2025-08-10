@@ -27,7 +27,15 @@ function CartButton() {
 }
 
 export default function CartPage() {
-  const { items, remove, clear, total_cents, currency } = useCart()
+  // ACHTUNG: Diese Felder müssen zu deinem CartProvider passen!
+  // -> totalCents statt total_cents; currency leiten wir vom ersten Item ab.
+  const { items, remove, clear, totalCents } = useCart()
+
+  const currency = (items[0]?.currency || "EUR").toUpperCase()
+  const totalFmt = new Intl.NumberFormat("de-DE", {
+    style: "currency",
+    currency,
+  }).format((totalCents || 0) / 100)
 
   // AGB/… nur anzeigen, wenn Items vorhanden sind
   const [agb, setAgb] = useState(false)
@@ -38,29 +46,15 @@ export default function CartPage() {
   // Mobile Drawer
   const [mobileOpen, setMobileOpen] = useState(false)
 
-  const totalFmt = new Intl.NumberFormat("de-DE", {
-    style: "currency",
-    currency: (currency || "EUR").toUpperCase(),
-  }).format((total_cents || 0) / 100)
-
   async function checkout() {
     if (!agb || !widerruf || !versand) return
     setBusy(true)
     try {
+      // NUR IDs senden – deine /api/checkout erwartet string[]
       const res = await fetch("/api/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          items: items.map(i => ({
-            id: i.id,
-            title: i.title,
-            price_cents: i.price_cents,
-            currency: i.currency,
-            image: i.image ?? null,
-          })),
-          success_url: `${window.location.origin}/success`,
-          cancel_url: `${window.location.origin}/cart`,
-        }),
+        body: JSON.stringify({ items: items.map(i => i.id) }),
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json?.error || "Checkout fehlgeschlagen")
@@ -74,7 +68,7 @@ export default function CartPage() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-taupe-50 via-white to-blue-50">
-      {/* NAVIGATION – identisch aufgebaut + Mobile Button */}
+      {/* NAVIGATION – identisch zum Onepager + Mobile Button */}
       <nav className="fixed top-0 z-50 w-full border-b border-taupe-100 bg-white/80 backdrop-blur-md">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="flex h-16 items-center justify-between">
@@ -95,6 +89,7 @@ export default function CartPage() {
             <div className="hidden md:flex items-center gap-4">
               <Link href="/#about" className="text-gray-600 transition-colors hover:text-taupe-400">Künstler</Link>
               <Link href="/#gallery" className="text-gray-600 transition-colors hover:text-taupe-400">Galerie</Link>
+              <Link href="/#purchase" className="text-gray-600 transition-colors hover:text-taupe-400">Kaufen</Link>
               <Link href="/#contact" className="text-gray-600 transition-colors hover:text-taupe-400">Kontakt</Link>
               <CartButton />
             </div>
@@ -133,6 +128,7 @@ export default function CartPage() {
             <nav className="space-y-4">
               <Link href="/#about" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>Künstler</Link>
               <Link href="/#gallery" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>Galerie</Link>
+              <Link href="/#purchase" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>Kaufen</Link>
               <Link href="/#contact" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>Kontakt</Link>
             </nav>
           </div>
@@ -150,6 +146,7 @@ export default function CartPage() {
               {items.length === 0 ? (
                 <div className="text-gray-600">
                   <p className="mb-2">Dein Warenkorb ist leer.</p>
+                  <p className="mb-4">Zwischensumme: <strong>0,00 €</strong></p>
                   <Link href="/#gallery" className="underline">Zur Galerie</Link>
                 </div>
               ) : (
