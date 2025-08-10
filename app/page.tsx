@@ -4,7 +4,7 @@ import type React from "react"
 import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
-import { Mail, Phone, MapPin, Heart, Palette, Send, ChevronLeft, ChevronRight, X, Menu } from "lucide-react"
+import { Mail, MapPin, Heart, Palette, Send, ChevronLeft, ChevronRight, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
@@ -12,17 +12,19 @@ import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 
+// ---------- Datentyp passend zu Supabase ----------
 type Artwork = {
-  id: number
+  id: string
   title: string
-  size: string
-  medium: string
-  price: string
+  description?: string
+  price_cents: number
+  currency: string
   available: boolean
   images: string[]
 }
 
 export default function LinasoulPortfolio() {
+  // Forms
   const [contactForm, setContactForm] = useState({ name: "", email: "", message: "" })
   const [inquiryForm, setInquiryForm] = useState({ name: "", email: "", artwork: "", message: "" })
 
@@ -32,6 +34,9 @@ export default function LinasoulPortfolio() {
   // Zoom-Lightbox
   const [zoomSrc, setZoomSrc] = useState<string | null>(null)
   const [zoomLevel, setZoomLevel] = useState(1)
+
+  // Artworks aus API
+  const [artworks, setArtworks] = useState<Artwork[]>([])
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -44,62 +49,12 @@ export default function LinasoulPortfolio() {
     return () => window.removeEventListener("keydown", onKey)
   }, [])
 
-  const artworks: Artwork[] = [
-    {
-      id: 1,
-      title: "Ethereal Dreams",
-      size: '24" x 36"',
-      medium: "Acrylic on Canvas",
-      price: "$850",
-      available: true,
-      images: ["/images/IMG_4634.jpeg", "/images/IMG_4643.jpeg", "/images/IMG_4646.jpeg"],
-    },
-    {
-      id: 2,
-      title: "Golden Whispers",
-      size: '30" x 40"',
-      medium: "Acrylic on Canvas",
-      price: "$1,200",
-      available: true,
-      images: ["/images/IMG_4643.jpeg"],
-    },
-    {
-      id: 3,
-      title: "Ocean's Memory",
-      size: '18" x 24"',
-      medium: "Acrylic on Canvas",
-      price: "$650",
-      available: false,
-      images: ["/images/IMG_4646.jpeg"],
-    },
-    {
-      id: 4,
-      title: "Sunset Reverie",
-      size: '36" x 48"',
-      medium: "Acrylic on Canvas",
-      price: "$1,800",
-      available: true,
-      images: ["/images/abstract-background.jpeg"],
-    },
-    {
-      id: 5,
-      title: "Forest Meditation",
-      size: '20" x 30"',
-      medium: "Acrylic on Canvas",
-      price: "$750",
-      available: true,
-      images: ["/placeholder.svg"],
-    },
-    {
-      id: 6,
-      title: "Cosmic Dance",
-      size: '32" x 44"',
-      medium: "Acrylic on Canvas",
-      price: "$1,400",
-      available: true,
-      images: ["/placeholder.svg"],
-    },
-  ]
+  useEffect(() => {
+    fetch("/api/artworks")
+      .then((res) => res.json())
+      .then((json) => setArtworks(json.artworks ?? []))
+      .catch(console.error)
+  }, [])
 
   const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault()
@@ -111,6 +66,27 @@ export default function LinasoulPortfolio() {
     console.log("Inquiry form submitted:", inquiryForm)
   }
 
+  // ---------- Beschreibung mit Mehr/Weniger ----------
+  function ArtworkDescription({ text }: { text: string }) {
+    const [expanded, setExpanded] = useState(false)
+    const short = text.length > 180 ? text.slice(0, 180) + "…" : text
+    return (
+      <p className="mb-3 text-gray-600">
+        {expanded ? text : short}{" "}
+        {text.length > 180 && (
+          <button
+            type="button"
+            onClick={() => setExpanded((v) => !v)}
+            className="underline text-gray-800 hover:text-gray-600"
+          >
+            {expanded ? "weniger" : "mehr"}
+          </button>
+        )}
+      </p>
+    )
+  }
+
+  // ---------- Einzelkarte ----------
   function ArtworkCard({
     artwork,
     onInquire,
@@ -121,20 +97,23 @@ export default function LinasoulPortfolio() {
     onZoom: (src: string) => void
   }) {
     const [idx, setIdx] = useState(0)
-    const hasMultiple = artwork.images.length > 1
-    const prevImage = () => setIdx((p) => (p === 0 ? artwork.images.length - 1 : p - 1))
-    const nextImage = () => setIdx((p) => (p === artwork.images.length - 1 ? 0 : p + 1))
+    const hasMultiple = artwork.images?.length > 1
+
+    const prevImage = () => setIdx((p) => (p === 0 ? (artwork.images?.length ?? 1) - 1 : p - 1))
+    const nextImage = () => setIdx((p) => (p === (artwork.images?.length ?? 1) - 1 ? 0 : p + 1))
+
+    const price = `${(artwork.price_cents / 100).toFixed(2)} ${artwork.currency?.toUpperCase() || "EUR"}`
 
     return (
       <Card className="group overflow-hidden border-0 shadow-lg transition-all duration-300 hover:shadow-2xl">
         <div className="relative aspect-[3/4] overflow-hidden">
           <Image
-            src={artwork.images[idx] || "/placeholder.svg"}
+            src={(artwork.images && artwork.images[idx]) || "/placeholder.svg"}
             alt={artwork.title}
             width={400}
             height={600}
             className="h-full w-full cursor-zoom-in object-cover transition-transform duration-300 group-hover:scale-105"
-            onClick={() => onZoom(artwork.images[idx])}
+            onClick={() => artwork.images && artwork.images[idx] && onZoom(artwork.images[idx])}
           />
 
           {hasMultiple && (
@@ -173,21 +152,24 @@ export default function LinasoulPortfolio() {
           <div className="mb-2 flex items-start justify-between">
             <h3 className="text-xl font-medium text-gray-800">{artwork.title}</h3>
             <Badge variant={artwork.available ? "default" : "secondary"} className="ml-2">
-              {artwork.available ? "Available" : "Sold"}
+              {artwork.available ? "Verfügbar" : "Verkauft"}
             </Badge>
           </div>
-          <p className="mb-1 text-gray-600">{artwork.size}</p>
-          <p className="mb-3 text-sm text-gray-500">{artwork.medium}</p>
+
+          {artwork.description ? <ArtworkDescription text={artwork.description} /> : null}
+
           <div className="flex items-center justify-between">
-            <span className="text-lg font-medium text-black">{artwork.price}</span>
-            {artwork.available && (
+            <span className="text-lg font-medium text-black">{price}</span>
+            {artwork.available ? (
               <Button
                 size="sm"
                 className="bg-[#f9f5ec] text-gray-800 hover:bg-[#f2e8dc]"
                 onClick={() => onInquire(artwork.title)}
               >
-                Inquire
+                In den Warenkorb
               </Button>
+            ) : (
+              <span className="text-sm text-gray-500">Verkauft</span>
             )}
           </div>
         </CardContent>
@@ -200,9 +182,7 @@ export default function LinasoulPortfolio() {
       {/* Navigation */}
       <nav className="fixed top-0 z-50 w-full border-b border-taupe-100 bg-white/80 backdrop-blur-md">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          {/* beide Blöcke in EINEM Flex-Wrapper */}
           <div className="flex h-16 items-center justify-between">
-            {/* Logo (mit deinem mt-5 beibehalten) */}
             <div className="flex h-16 items-center mt-5">
               <Link href="#home" className="inline-flex h-16 items-center">
                 <Image
@@ -216,7 +196,7 @@ export default function LinasoulPortfolio() {
               </Link>
             </div>
 
-            {/* Desktop-Links */}
+            {/* Desktop */}
             <div className="hidden space-x-8 md:flex">
               <a href="#about" className="text-gray-600 transition-colors hover:text-taupe-400">
                 Künstler
@@ -232,98 +212,63 @@ export default function LinasoulPortfolio() {
               </a>
             </div>
 
-            {/* Mobile-Hamburger */}
-           <button
-  aria-label={mobileOpen ? "Close menu" : "Open menu"}
-  aria-expanded={mobileOpen}
-  onClick={() => setMobileOpen((v) => !v)}
-  className="md:hidden inline-flex items-center justify-center p-2 text-gray-800 hover:text-taupe-700 transition-colors"
->
-  {mobileOpen ? (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-    </svg>
-  ) : (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-    </svg>
-  )}
-</button>
+            {/* Mobile Button (nur Icon, keine Umrandung) */}
+            <button
+              aria-label={mobileOpen ? "Close menu" : "Open menu"}
+              aria-expanded={mobileOpen}
+              onClick={() => setMobileOpen((v) => !v)}
+              className="md:hidden inline-flex items-center justify-center p-2 text-gray-800 hover:text-taupe-700 transition-colors"
+            >
+              {mobileOpen ? (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              ) : (
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                </svg>
+              )}
+            </button>
           </div>
         </div>
       </nav>
 
-  {/* Right Drawer */}
-{mobileOpen && (
-  <div
-    className="fixed inset-0 z-50 flex justify-end bg-black/40"
-    onClick={() => setMobileOpen(false)}
-  >
-    <div
-      className="w-64 bg-white/90 backdrop-blur-md rounded-l-2xl shadow-lg p-6 mt-16 mb-6 overflow-y-auto"
-      onClick={(e) => e.stopPropagation()}
-    >
-      <nav className="space-y-4">
-        <a
-          href="#about"
-          className="block text-lg text-gray-800 hover:text-taupe-600"
-          onClick={() => setMobileOpen(false)}
-        >
-          Künstler
-        </a>
-        <a
-          href="#gallery"
-          className="block text-lg text-gray-800 hover:text-taupe-600"
-          onClick={() => setMobileOpen(false)}
-        >
-          Galerie
-        </a>
-        <a
-          href="#purchase"
-          className="block text-lg text-gray-800 hover:text-taupe-600"
-          onClick={() => setMobileOpen(false)}
-        >
-          Kaufen
-        </a>
-        <a
-          href="#contact"
-          className="block text-lg text-gray-800 hover:text-taupe-600"
-          onClick={() => setMobileOpen(false)}
-        >
-          Kontakt
-        </a>
-      </nav>
-    </div>
-  </div>
-)}
-      {/* Hero Section */}
-      <section
-        id="home"
-        className="relative flex min-h-screen items-center justify-center overflow-hidden"
-        style={{ paddingTop: "4rem" }}
-      >
-        {/* Abstract Painting Background */}
-        <div className="absolute inset-0">
+      {/* Right Drawer (mobil) */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 flex justify-end bg-black/40" onClick={() => setMobileOpen(false)}>
           <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-60"
-            style={{ backgroundImage: "url('/images/abstract-background.jpeg')" }}
-          />
+            className="w-64 bg-white/90 backdrop-blur-md rounded-l-2xl shadow-lg p-6 mt-16 mb-6 overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <nav className="space-y-4">
+              <a href="#about" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>
+                Künstler
+              </a>
+              <a href="#gallery" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>
+                Galerie
+              </a>
+              <a href="#purchase" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>
+                Kaufen
+              </a>
+              <a href="#contact" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>
+                Kontakt
+              </a>
+            </nav>
+          </div>
+        </div>
+      )}
+
+      {/* Hero */}
+      <section id="home" className="relative flex min-h-screen items-center justify-center overflow-hidden" style={{ paddingTop: "4rem" }}>
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-60" style={{ backgroundImage: "url('/images/abstract-background.jpeg')" }} />
           <div className="absolute inset-0 bg-white/20" />
         </div>
 
         <div className="relative z-10 mx-auto max-w-4xl px-4 text-center">
-          <Image
-            src="/images/Logo.png"
-            alt="Linasoul Logo"
-            width={400}
-            height={150}
-            priority
-            className="mx-auto block"
-          />
-  
+          <Image src="/images/Logo.png" alt="Linasoul Logo" width={400} height={150} priority className="mx-auto block" />
           <p className="mx-auto mb-12 max-w-2xl text-lg leading-relaxed text-gray-700 drop-shadow-md">
-            Fließende Formen und ätherische Farben, die die Seele berühren und zum Nachdenken anregen – 
-            Entdecke meine Kunst der tiefsten Emotionen.
+            Fließende Formen und ätherische Farben, die die Seele berühren und zum Nachdenken anregen – Entdecke meine Kunst der tiefsten Emotionen.
           </p>
           <Button
             size="lg"
@@ -335,7 +280,7 @@ export default function LinasoulPortfolio() {
         </div>
       </section>
 
-      {/* About Section */}
+      {/* About */}
       <section id="about" className="bg-white py-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-12 md:grid-cols-2">
@@ -343,17 +288,15 @@ export default function LinasoulPortfolio() {
               <h2 className="mb-6 text-4xl font-light text-gray-800">Über die Künstlerin</h2>
               <div className="space-y-4 leading-relaxed text-gray-600">
                 <p>
-                  Willkommen in meiner Welt der abstrakten Kunst! Ich bin Selina und meine Gemälde sind eine Reise 
+                  Willkommen in meiner Welt der abstrakten Kunst! Ich bin Selina und meine Gemälde sind eine Reise
                   zu den unsichtbaren Verbindungen zwischen Gefühlen, Erinnerungen und der Natur.
                 </p>
                 <p>
-                  Jedes Gemälde entsteht aus einer intuitiven Antwort auf ein Gefühl oder einen Augenblick. 
+                  Jedes Gemälde entsteht aus einer intuitiven Antwort auf ein Gefühl oder einen Augenblick.
                   Durch das Schichten von Acrylfarben und Texturen erzeuge ich Tiefe und Bewegung
                   und lasse das Gemälde sich organisch auf der Leinwand entfalten.
                 </p>
-                <p>
-                  Das Ergebnis sind lebendige und ausdrucksstarke Gemälde, die eine ganz eigene Geschichte erzählen.
-                </p>
+                <p>Das Ergebnis sind lebendige und ausdrucksstarke Gemälde, die eine ganz eigene Geschichte erzählen.</p>
               </div>
               <div className="mt-8 flex items-center space-x-4">
                 <Heart className="h-5 w-5 text-taupe-400" />
@@ -362,13 +305,7 @@ export default function LinasoulPortfolio() {
             </div>
             <div className="relative">
               <div className="aspect-square overflow-hidden rounded-2xl shadow-2xl">
-                <Image
-                  src="/images/AboutMe1.jpeg"
-                  alt="Lina in her studio"
-                  width={500}
-                  height={500}
-                  className="object-cover"
-                />
+                <Image src="/images/AboutMe1.jpeg" alt="Lina in her studio" width={500} height={500} className="object-cover" />
               </div>
               <div className="absolute -bottom-6 -right-6 flex h-24 w-24 items-center justify-center rounded-full bg-taupe-100">
                 <Palette className="h-8 w-8 text-taupe-400" />
@@ -378,14 +315,14 @@ export default function LinasoulPortfolio() {
         </div>
       </section>
 
-      {/* Gallery Section */}
+      {/* Gallery */}
       <section id="gallery" className="bg-gradient-to-br from-taupe-50 to-taupe-100 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
           <div className="mb-16 text-center">
             <h2 className="mb-4 text-4xl font-light text-gray-800">Galerie</h2>
             <p className="mx-auto max-w-2xl text-lg text-gray-600">
-              Meine Welt in Farbe: Tauche ein in meine neuesten abstrakten Gemälde. 
-              Lass Dich von den Geschichten aus Farbe, Form und Textur verzaubern.
+              Meine Welt in Farbe: Tauche ein in meine neuesten abstrakten Gemälde. Lass Dich von den Geschichten
+              aus Farbe, Form und Textur verzaubern.
             </p>
           </div>
 
@@ -408,12 +345,14 @@ export default function LinasoulPortfolio() {
         </div>
       </section>
 
-      {/* Purchase Inquiry Section */}
+      {/* Purchase Inquiry */}
       <section id="purchase" className="bg-white py-20">
         <div className="mx-auto max-w-4xl px-4 sm:px-6 lg:px-8">
           <div className="mb-12 text-center">
             <h2 className="mb-4 text-4xl font-light text-gray-800">Kaufanfrage</h2>
-            <p className="text-lg text-gray-600">Hat eines meiner Werke Dein Herz berührt? Ich freue mich auf Deine Anfrage!</p>
+            <p className="text-lg text-gray-600">
+              Hat eines meiner Werke Dein Herz berührt? Ich freue mich auf Deine Anfrage!
+            </p>
           </div>
 
           <Card className="border-0 shadow-lg">
@@ -449,7 +388,7 @@ export default function LinasoulPortfolio() {
                     id="artwork-interest"
                     value={inquiryForm.artwork}
                     onChange={(e) => setInquiryForm((prev) => ({ ...prev, artwork: e.target.value }))}
-                    placeholder="Enter artwork title or describe what you're looking for"
+                    placeholder="Titel eingeben oder Wunsch beschreiben"
                     className="mt-1"
                   />
                 </div>
@@ -460,7 +399,7 @@ export default function LinasoulPortfolio() {
                     id="inquiry-message"
                     value={inquiryForm.message}
                     onChange={(e) => setInquiryForm((prev) => ({ ...prev, message: e.target.value }))}
-                    placeholder="Ich freue mich, mehr über Dein Interesse an dem Gemälde zu erfahren. Wenn Du Fragen hast oder weitere Bilder benötigst, melde Dich einfach..."
+                    placeholder="Ich freue mich über Deine Nachricht …"
                     className="mt-1 min-h-[120px]"
                     required
                   />
@@ -476,7 +415,7 @@ export default function LinasoulPortfolio() {
         </div>
       </section>
 
-      {/* Contact Section */}
+      {/* Contact */}
       <section id="contact" className="bg-gradient-to-br from-taupe-50 to-blue-50 py-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="grid gap-12 md:grid-cols-2">
@@ -498,7 +437,6 @@ export default function LinasoulPortfolio() {
               </div>
             </div>
 
-  
             <Card className="border-0 shadow-lg">
               <CardContent className="p-8">
                 <form onSubmit={handleContactSubmit} className="space-y-6">
@@ -553,17 +491,9 @@ export default function LinasoulPortfolio() {
           <div className="text-center">
             <div className="flex justify-center items-center h-16">
               <Link href="#home" className="inline-flex items-center">
-                <Image
-                  src="/images/Logo_weiss_2.png"
-                  alt="Linasoul Logo"
-                  width={120}
-                  height={40}
-                  priority
-                  className="block"
-                />
+                <Image src="/images/Logo_weiss_2.png" alt="Linasoul Logo" width={120} height={40} priority className="block" />
               </Link>
             </div>
-
             <p className="mb-4 text-gray-400">Abstract Acrylic Artist • Creating art that touches the soul</p>
             <p className="text-sm text-gray-500">© 2025 Linasoul.art</p>
           </div>
