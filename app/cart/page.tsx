@@ -89,7 +89,6 @@ export default function CartPage() {
             <div className="hidden md:flex items-center gap-4">
               <Link href="/#about" className="text-gray-600 transition-colors hover:text-taupe-400">Künstler</Link>
               <Link href="/#gallery" className="text-gray-600 transition-colors hover:text-taupe-400">Galerie</Link>
-              <Link href="/#purchase" className="text-gray-600 transition-colors hover:text-taupe-400">Kaufen</Link>
               <Link href="/#contact" className="text-gray-600 transition-colors hover:text-taupe-400">Kontakt</Link>
               <CartButton />
             </div>
@@ -128,7 +127,6 @@ export default function CartPage() {
             <nav className="space-y-4">
               <Link href="/#about" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>Künstler</Link>
               <Link href="/#gallery" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>Galerie</Link>
-              <Link href="/#purchase" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>Kaufen</Link>
               <Link href="/#contact" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>Kontakt</Link>
             </nav>
           </div>
