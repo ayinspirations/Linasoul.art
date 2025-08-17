@@ -348,6 +348,9 @@ export default function LinasoulPortfolio() {
 
         <div className="relative z-10 mx-auto max-w-4xl px-4 text-center">
           <Image src="/images/Logo.png" alt="Linasoul Logo" width={400} height={150} priority className="mx-auto block" />
+          <h1 className="mt-6 mb-4 text-3xl font-light text-gray-900">
+  Abstrakte Acrylbilder & Acrylgemälde auf Leinwand – direkt kaufen
+</h1>
           <p className="mx-auto mb-12 max-w-2xl text-lg leading-relaxed text-gray-700 drop-shadow-md">
             Fließende Formen und ätherische Farben, die die Seele berühren und zum Nachdenken anregen – Entdecke meine Kunst der tiefsten Emotionen.
           </p>
