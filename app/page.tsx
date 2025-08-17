@@ -243,7 +243,7 @@ export default function LinasoulPortfolio() {
       In den Warenkorb
     </Button>
   ) : (
-    <span className="text-sm text-gray-500">Verkauft</span>
+    <span className="text-sm text-gray-500">Nicht Verfügbar</span>
   )}
 </div>
         </CardContent>
