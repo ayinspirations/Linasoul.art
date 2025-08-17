@@ -11,9 +11,36 @@ import Navbar from "@/components/navbar"
 import Footer from "@/components/footer"
 
 export const metadata: Metadata = {
-  title: "Linasoul Art",
-  description: "Abstract Acrylic Art by Selina Sickinger",
-  generator: "v0.dev",
+  metadataBase: new URL("https://linasoul.art"),
+  title: {
+    default: "Acrylbilder & Acrylgemälde kaufen – Linasoul Art",
+    template: "%s | Linasoul Art",
+  },
+  description:
+    "Einzigartige abstrakte Acrylbilder & Acrylgemälde auf Leinwand von Selina Sickinger. Originale moderne Kunst direkt online kaufen – handgemalt, einzigartig, hochwertig.",
+  alternates: { canonical: "/" },
+  openGraph: {
+    type: "website",
+    url: "https://linasoul.art",
+    title: "Acrylbilder & Acrylgemälde kaufen – Linasoul Art",
+    description:
+      "Abstrakte Acrylmalerei auf Leinwand: Originale Kunstwerke von Selina Sickinger direkt online kaufen.",
+    siteName: "Linasoul Art",
+    images: ["/images/og-linasoul.jpg"], // Lege diese Datei unter /public/images/ an
+    locale: "de_DE",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "Acrylbilder & Acrylgemälde kaufen – Linasoul Art",
+    description:
+      "Originale Acrylgemälde auf Leinwand von Selina Sickinger – jetzt entdecken & kaufen.",
+    images: ["/images/og-linasoul.jpg"],
+  },
+  icons: {
+    icon: "/favicon.ico",
+    shortcut: "/favicon.ico",
+    apple: "/apple-touch-icon.png",
+  },
 }
 
 export default function RootLayout({
