@@ -38,7 +38,21 @@ export default function AgbPage() {
           <h2 className="font-semibold">4. Lieferbedingungen</h2>
           <p>
             Versand an die im Bestellprozess angegebene Lieferadresse. Keine Selbstabholung, keine Lieferung an Packstationen.
-          </p>
+            </p>
+            <p>
+  Wir liefern standardmäßig nur innerhalb Deutschlands. Der Versand innerhalb
+  Deutschlands ist für unsere Kunden <strong>kostenlos</strong>.
+</p>
+<p>
+  Ein Versand in andere Länder der Europäischen Union oder weltweit ist auf Anfrage möglich. 
+  Hierfür können <strong>zusätzliche Versandkosten</strong> anfallen, die wir Ihnen vor 
+  Vertragsschluss mitteilen.
+</p>
+<p>
+  Die Lieferung erfolgt durch einen von uns ausgewählten Versanddienstleister
+  an die von Ihnen angegebene Lieferadresse, sofern nichts anderes vereinbart ist.
+</p>
+          
         </section>
 
         <section>
