@@ -11,18 +11,29 @@ import Navbar from "@/components/navbar"
 import Footer from "@/components/footer"
 
 export const metadata: Metadata = {
-  title: "Linasoul Art – Acrylbilder & Acrylgemälde kaufen | Selina Sickinger",
-  description: "Entdecken Sie handgemalte Acrylbilder und Acrylgemälde von Selina Sickinger. Jedes Werk ist einzigartig – moderne Kunst auf Leinwand für Ihr Zuhause.",
-},
+  metadataBase: new URL("https://linasoul.art"),
+  title: {
+    default: "Linasoul Art – Acrylbilder & Acrylgemälde kaufen | Selina Sickinger",
+    template: "%s | Linasoul Art",
+  },
+  description:
+    "Entdecken Sie handgemalte Acrylbilder und Acrylgemälde von Selina Sickinger. Jedes Werk ist einzigartig – moderne Kunst auf Leinwand für Ihr Zuhause.",
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
     url: "https://linasoul.art",
+    siteName: "Linasoul Art",
     title: "Acrylbilder & Acrylgemälde kaufen – Linasoul Art",
     description:
       "Abstrakte Acrylmalerei auf Leinwand: Originale Kunstwerke von Selina Sickinger direkt online kaufen.",
-    siteName: "Linasoul Art",
-    images: ["/images/og-linasoul.jpg"], // Lege diese Datei unter /public/images/ an
+    images: [
+      {
+        url: "/images/og-linasoul.jpg", // Lege diese Datei unter /public/images/ ab (1200x630)
+        width: 1200,
+        height: 630,
+        alt: "Abstraktes Acrylgemälde von Linasoul Art",
+      },
+    ],
     locale: "de_DE",
   },
   twitter: {
@@ -57,19 +68,13 @@ html {
       </head>
       <body className="flex min-h-screen flex-col">
         <CartProvider>
-          {/* NAVBAR */}
           <Navbar />
           {/* Abstand unter der fixen Navi */}
           <div className="h-16" />
-
-          {/* MAIN CONTENT */}
           <div className="flex-grow">{children}</div>
-
-          {/* FOOTER */}
           <Footer />
         </CartProvider>
 
-        {/* VERZEL ANALYTICS */}
         <Analytics />
       </body>
     </html>
