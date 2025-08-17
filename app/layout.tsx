@@ -6,6 +6,9 @@ import "./globals.css"
 // Cart (global!)
 import { CartProvider } from "./cart/CartProvider"
 
+// Vercel Web Analytics
+import { Analytics } from "@vercel/analytics/react"
+
 export const metadata: Metadata = {
   title: "v0 App",
   description: "Created with v0",
@@ -30,6 +33,9 @@ html {
         <CartProvider>
           {children}
         </CartProvider>
+
+        {/* Vercel Analytics aktivieren */}
+        <Analytics />
       </body>
     </html>
   )
