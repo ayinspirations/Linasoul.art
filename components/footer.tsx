@@ -4,7 +4,7 @@ import { Instagram } from "lucide-react"
 
 export default function Footer() {
   return (
-    <footer className="bg-taupe-950 py-12 text-white mt-16">
+    <footer className="bg-[#dfd6ce] py-12 text-black mt-16">
       <div className="mx-auto max-w-6xl px-4 text-center">
         {/* Logo */}
         <div className="flex justify-center mb-4">
