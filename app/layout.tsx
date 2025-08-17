@@ -10,8 +10,8 @@ import { CartProvider } from "./cart/CartProvider"
 import { Analytics } from "@vercel/analytics/react"
 
 export const metadata: Metadata = {
-  title: "Linasoul.art – Original Kunstwerke von Selina Sickinger",
-  description: "Online-Shop für Kunstwerke von Selina Sickinger. Kaufen Sie Originale direkt von der Künstlerin.",
+  title: "v0 App",
+  description: "Created with v0",
   generator: "v0.dev",
 }
 
@@ -32,9 +32,11 @@ html {
       <body className="flex min-h-screen flex-col">
         <CartProvider>
           {/* Seiteninhalt */}
-          <div className="flex-grow">{children}</div>
+          <div className="flex-grow">
+            {children}
+          </div>
 
-          {/* Footer */}
+          {/* Footer mit Pflichtlinks */}
           <footer className="mt-12 border-t border-gray-200 bg-gray-50 py-6 text-center text-sm text-gray-600">
             <p>© {new Date().getFullYear()} Linasoul.art · Selina Sickinger</p>
             <p className="mt-2 space-x-4">
@@ -46,7 +48,7 @@ html {
           </footer>
         </CartProvider>
 
-        {/* Vercel Analytics */}
+        {/* Vercel Analytics aktivieren */}
         <Analytics />
       </body>
     </html>
