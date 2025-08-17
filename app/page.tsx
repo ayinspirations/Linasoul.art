@@ -62,6 +62,7 @@ export default function LinasoulPortfolio() {
   const [artworks, setArtworks] = useState<Artwork[]>([])
 
   useEffect(() => {
+    // ESC schließt Menüs/Zoom
     const onKey = (e: KeyboardEvent) => {
       if (e.key === "Escape") {
         setMobileOpen(false)
@@ -70,6 +71,11 @@ export default function LinasoulPortfolio() {
     }
     window.addEventListener("keydown", onKey)
     return () => window.removeEventListener("keydown", onKey)
+  }, [])
+
+  // --- Analytics: Page View (einmalig) ---
+  useEffect(() => {
+    track("Homepage Viewed")
   }, [])
 
   // Laden + Normalisieren
@@ -124,6 +130,8 @@ export default function LinasoulPortfolio() {
 
   const handleContactSubmit = (e: React.FormEvent) => {
     e.preventDefault()
+    // --- Analytics: Kontakt gesendet ---
+    track("Contact Submitted")
     console.log("Contact form submitted:", contactForm)
   }
 
@@ -174,7 +182,13 @@ export default function LinasoulPortfolio() {
             width={400}
             height={600}
             className="h-full w-full cursor-zoom-in object-cover transition-transform duration-300 group-hover:scale-105"
-            onClick={() => artwork.images && artwork.images[idx] && onZoom(artwork.images[idx])}
+            onClick={() => {
+              if (artwork.images && artwork.images[idx]) {
+                // --- Analytics: Bild-Zoom ---
+                track("Image Zoom", { artwork_id: artwork.id })
+                onZoom(artwork.images[idx])
+              }
+            }}
           />
 
           {hasMultiple && (
@@ -220,33 +234,38 @@ export default function LinasoulPortfolio() {
           {artwork.size ? <p className="mb-1 text-sm text-gray-500">{artwork.size}</p> : null}
           {artwork.description ? <ArtworkDescription text={artwork.description} /> : null}
 
-         <div className="flex items-center justify-between">
-  {artwork.available ? (
-    <span className="text-lg font-medium text-black">{priceFmt}</span>
-  ) : (
-    <span aria-hidden className="inline-block" />
-  )}
+          <div className="flex items-center justify-between">
+            {artwork.available ? (
+              <span className="text-lg font-medium text-black">{priceFmt}</span>
+            ) : (
+              <span aria-hidden className="inline-block" />
+            )}
 
-  {artwork.available ? (
-    <Button
-      size="sm"
-      className="bg-[#f9f5ec] text-gray-800 hover:bg-[#f2e8dc]"
-      onClick={() =>
-        add({
-          id: artwork.id,
-          title: artwork.title,
-          price_cents: artwork.price_cents ?? 0,
-          currency: artwork.currency || "eur",
-          image: artwork.images?.[0] ?? null,
-        })
-      }
-    >
-      In den Warenkorb
-    </Button>
-  ) : (
-    <span className="text-sm text-gray-500">Nicht Verfügbar</span>
-  )}
-</div>
+            {artwork.available ? (
+              <Button
+                size="sm"
+                className="bg-[#f9f5ec] text-gray-800 hover:bg-[#f2e8dc]"
+                onClick={() => {
+                  // --- Analytics: Add to Cart ---
+                  track("Add to Cart", {
+                    artwork_id: artwork.id,
+                    price_eur: (artwork.price_cents ?? 0) / 100,
+                  })
+                  add({
+                    id: artwork.id,
+                    title: artwork.title,
+                    price_cents: artwork.price_cents ?? 0,
+                    currency: artwork.currency || "eur",
+                    image: artwork.images?.[0] ?? null,
+                  })
+                }}
+              >
+                In den Warenkorb
+              </Button>
+            ) : (
+              <span className="text-sm text-gray-500">Nicht Verfügbar</span>
+            )}
+          </div>
         </CardContent>
       </Card>
     )
@@ -254,246 +273,247 @@ export default function LinasoulPortfolio() {
 
   // ---------- Seite ----------
   return (
-      <div className="min-h-screen bg-gradient-to-br from-taupe-50 via-white to-blue-50">
-        {/* Navigation */}
-        <nav className="fixed top-0 z-50 w-full border-b border-taupe-100 bg-white/80 backdrop-blur-md">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="flex h-16 items-center justify-between">
-              <div className="flex h-16 items-center mt-5">
-                <Link href="#home" className="inline-flex h-16 items-center">
-                  <Image
-                    src="/images/Logo_schwarz_2.png"
-                    alt="Linasoul Logo"
-                    width={120}
-                    height={40}
-                    priority
-                    className="block"
-                  />
-                </Link>
-              </div>
-
-              {/* Desktop */}
-              <div className="hidden md:flex items-center gap-4">
-                <a href="#about" className="text-gray-600 transition-colors hover:text-taupe-400">Künstler</a>
-                <a href="#gallery" className="text-gray-600 transition-colors hover:text-taupe-400">Galerie</a>
-                <a href="#contact" className="text-gray-600 transition-colors hover:text-taupe-400">Kontakt</a>
-                <CartButton />
-              </div>
-
-              {/* Mobile: Cart + Burger */}
-              <div className="md:hidden flex items-center gap-2">
-                <CartButton />
-                <button
-                  aria-label={mobileOpen ? "Close menu" : "Open menu"}
-                  aria-expanded={mobileOpen}
-                  onClick={() => setMobileOpen((v) => !v)}
-                  className="inline-flex items-center justify-center p-2 text-gray-800 hover:text-taupe-700 transition-colors"
-                >
-                  {mobileOpen ? (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  ) : (
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
-                    </svg>
-                  )}
-                </button>
-              </div>
-            </div>
-          </div>
-        </nav>
-
-        {/* Right Drawer (mobil) */}
-        {mobileOpen && (
-          <div className="fixed inset-0 z-50 flex justify-end bg-black/40" onClick={() => setMobileOpen(false)}>
-            <div
-              className="w-64 bg-white/90 backdrop-blur-md rounded-l-2xl shadow-lg p-6 mt-16 mb-6 overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <nav className="space-y-4">
-                <a href="#about" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>Künstler</a>
-                <a href="#gallery" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>Galerie</a>
-                <a href="#contact" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>Kontakt</a>
-              </nav>
-            </div>
-          </div>
-        )}
-
-        {/* Hero */}
-        <section id="home" className="relative flex min-h-screen items-center justify-center overflow-hidden" style={{ paddingTop: "4rem" }}>
-          <div className="absolute inset-0">
-            <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-60" style={{ backgroundImage: "url('/images/abstract-background.jpeg')" }} />
-            <div className="absolute inset-0 bg-white/20" />
-          </div>
-
-          <div className="relative z-10 mx-auto max-w-4xl px-4 text-center">
-            <Image src="/images/Logo.png" alt="Linasoul Logo" width={400} height={150} priority className="mx-auto block" />
-            <p className="mx-auto mb-12 max-w-2xl text-lg leading-relaxed text-gray-700 drop-shadow-md">
-              Fließende Formen und ätherische Farben, die die Seele berühren und zum Nachdenken anregen – Entdecke meine Kunst der tiefsten Emotionen.
-            </p>
-            <Button
-              size="lg"
-              className="rounded-full bg-[#f9f5ec] px-8 py-3 text-gray-800 shadow-lg hover:bg-[#f2e8dc]"
-              onClick={() => document.getElementById("gallery")?.scrollIntoView({ behavior: "smooth" })}
-            >
-              Zur Galerie
-            </Button>
-          </div>
-        </section>
-
-        {/* About */}
-        <section id="about" className="bg-white py-20">
-          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <div className="grid items-center gap-12 md:grid-cols-2">
-              <div>
-                <h2 className="mb-6 text-4xl font-light text-gray-800">Über die Künstlerin</h2>
-                <div className="space-y-4 leading-relaxed text-gray-600">
-                  <p>Willkommen in meiner Welt der abstrakten Kunst! Ich bin Selina und meine Gemälde sind eine Reise zu den unsichtbaren Verbindungen zwischen Gefühlen, Erinnerungen und der Natur.</p>
-                  <p>Jedes Gemälde entsteht aus einer intuitiven Antwort auf ein Gefühl oder einen Augenblick. Durch das Schichten von Acrylfarben und Texturen erzeuge ich Tiefe und Bewegung und lasse das Gemälde sich organisch auf der Leinwand entfalten.</p>
-                  <p>Das Ergebnis sind lebendige und ausdrucksstarke Gemälde, die eine ganz eigene Geschichte erzählen.</p>
-                </div>
-                <div className="mt-8 flex items-center space-x-4">
-                  <Heart className="h-5 w-5 text-taupe-400" />
-                  <span className="text-gray-600">Creating art that touches the soul</span>
-                </div>
-              </div>
-              <div className="relative">
-                <div className="aspect-square overflow-hidden rounded-2xl shadow-2xl">
-                  <Image src="/images/AboutMe1.jpeg" alt="Lina in her studio" width={500} height={500} className="object-cover" />
-                </div>
-                <div className="absolute -bottom-6 -right-6 flex h-24 w-24 items-center justify-center rounded-full bg-taupe-100">
-                  <Palette className="h-8 w-8 text-taupe-400" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </section>
-
-        {/* Gallery */}
-        <section id="gallery" className="bg-gradient-to-br from-taupe-50 to-taupe-100 py-20">
-          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-            <div className="mb-16 text-center">
-              <h2 className="mb-4 text-4xl font-light text-gray-800">Galerie</h2>
-              <p className="mx-auto max-w-2xl text-lg text-gray-600">
-                Meine Welt in Farbe: Tauche ein in meine neuesten abstrakten Gemälde. Lass Dich von den Geschichten aus Farbe, Form und Textur verzaubern.
-              </p>
-            </div>
-
-            <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-              {artworks.map((artwork) => (
-                <ArtworkCard
-                  key={artwork.id}
-                  artwork={artwork}
-                  onZoom={(src) => {
-                    setZoomSrc(src)
-                    setZoomLevel(1)
-                  }}
+    <div className="min-h-screen bg-gradient-to-br from-taupe-50 via-white to-blue-50">
+      {/* Navigation */}
+      <nav className="fixed top-0 z-50 w-full border-b border-taupe-100 bg-white/80 backdrop-blur-md">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="flex h-16 items-center justify-between">
+            <div className="flex h-16 items-center mt-5">
+              <Link href="#home" className="inline-flex h-16 items-center">
+                <Image
+                  src="/images/Logo_schwarz_2.png"
+                  alt="Linasoul Logo"
+                  width={120}
+                  height={40}
+                  priority
+                  className="block"
                 />
-              ))}
+              </Link>
+            </div>
+
+            {/* Desktop */}
+            <div className="hidden md:flex items-center gap-4">
+              <a href="#about" className="text-gray-600 transition-colors hover:text-taupe-400">Künstler</a>
+              <a href="#gallery" className="text-gray-600 transition-colors hover:text-taupe-400">Galerie</a>
+              <a href="#contact" className="text-gray-600 transition-colors hover:text-taupe-400">Kontakt</a>
+              <CartButton />
+            </div>
+
+            {/* Mobile: Cart + Burger */}
+            <div className="md:hidden flex items-center gap-2">
+              <CartButton />
+              <button
+                aria-label={mobileOpen ? "Close menu" : "Open menu"}
+                aria-expanded={mobileOpen}
+                onClick={() => setMobileOpen((v) => !v)}
+                className="inline-flex items-center justify-center p-2 text-gray-800 hover:text-taupe-700 transition-colors"
+              >
+                {mobileOpen ? (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                ) : (
+                  <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+                  </svg>
+                )}
+              </button>
             </div>
           </div>
-        </section>
+        </div>
+      </nav>
 
-      
-
-        {/* Contact */}
-        <section id="contact" className="bg-gradient-to-br from-taupe-50 to-blue-50 py-20">
-          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <div className="grid gap-12 md:grid-cols-2">
-              <div>
-                <h2 className="mb-6 text-4xl font-light text-gray-800">Kontaktanfrage</h2>
-                <p className="mb-8 text-lg text-gray-600">
-                  Hat eines meiner Werke Dein Herz berührt? Ich freue mich auf Deine Anfrage!
-                </p>
-
-                <div className="space-y-4">
-                  <div className="flex items-center space-x-3">
-                    <Mail className="h-5 w-5 text-taupe-400" />
-                    <span className="text-gray-600">linasoul.art@gmx.de</span>
-                  </div>
-                  <div className="flex items-center space-x-3">
-                    <MapPin className="h-5 w-5 text-taupe-400" />
-                    <span className="text-gray-600">Leonberg, Stuttgart</span>
-                  </div>
-                </div>
-              </div>
-
-              <Card className="border-0 shadow-lg">
-                <CardContent className="p-8">
-                  <form onSubmit={handleContactSubmit} className="space-y-6">
-                    <div>
-                      <Label htmlFor="contact-name">Name</Label>
-                      <Input id="contact-name" value={contactForm.name} onChange={(e) => setContactForm((prev) => ({ ...prev, name: e.target.value }))} className="mt-1" required />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="contact-email">Email</Label>
-                      <Input id="contact-email" type="email" value={contactForm.email} onChange={(e) => setContactForm((prev) => ({ ...prev, email: e.target.value }))} className="mt-1" required />
-                    </div>
-
-                    <div>
-                      <Label htmlFor="contact-message">Nachricht</Label>
-                      <Textarea id="contact-message" value={contactForm.message} onChange={(e) => setContactForm((prev) => ({ ...prev, message: e.target.value }))} placeholder="Deine Nachricht..." className="mt-1 min-h-[120px]" required />
-                    </div>
-
-                    <Button type="submit" className="w-full bg-[#f9f5ec] text-gray-800 hover:bg-[#f2e8dc]" size="lg">
-                      Anfrage senden
-                    </Button>
-                  </form>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        </section>
-
-        {/* Footer */}
-        <footer className="bg-gray-800 py-12 text-white">
-          <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-            <div className="text-center">
-              <div className="flex justify-center items-center h-16">
-                <Link href="#home" className="inline-flex items-center">
-                  <Image src="/images/Logo_weiss_2.png" alt="Linasoul Logo" width={120} height={40} priority className="block" />
-                </Link>
-              </div>
-              <p className="mb-4 text-gray-400">Abstract Acrylic Artist • Creating art that touches the soul</p>
-              <p className="text-sm text-gray-500">© 2025 Linasoul.art</p>
-            </div>
-          </div>
-        </footer>
-
-        {/* Zoom Lightbox */}
-        {zoomSrc && (
+      {/* Right Drawer (mobil) */}
+      {mobileOpen && (
+        <div className="fixed inset-0 z-50 flex justify-end bg-black/40" onClick={() => setMobileOpen(false)}>
           <div
-            className="fixed inset-0 z-[9990] flex items-center justify-center bg-black/80 p-4"
-            onClick={() => { setZoomSrc(null); setZoomLevel(1) }}
+            className="w-64 bg-white/90 backdrop-blur-md rounded-l-2xl shadow-lg p-6 mt-16 mb-6 overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
           >
-            <button
-              aria-label="Close"
-              className="absolute right-4 top-4 z-[10000] rounded-full bg-white/90 p-2 shadow hover:bg-white"
-              onClick={(e) => {
-                e.stopPropagation()
-                setZoomSrc(null)
-                setZoomLevel(1)
-              }}
-            >
-              <X className="h-5 w-5 text-gray-800" />
-            </button>
+            <nav className="space-y-4">
+              <a href="#about" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>Künstler</a>
+              <a href="#gallery" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>Galerie</a>
+              <a href="#contact" className="block text-lg text-gray-800 hover:text-taupe-600" onClick={() => setMobileOpen(false)}>Kontakt</a>
+            </nav>
+          </div>
+        </div>
+      )}
 
-            <div className="relative z-[9995] max-h-full max-w-6xl overflow-auto">
-              <img
-                src={zoomSrc!}
-                alt="Zoomed artwork"
-                className="mx-auto block cursor-zoom-in transition-transform duration-200"
-                style={{ transform: `scale(${zoomLevel})`, transformOrigin: "center" }}
-                onClick={(e) => {
-                  e.stopPropagation()
-                  setZoomLevel((z) => (z === 1 ? 1.6 : 1))
+      {/* Hero */}
+      <section id="home" className="relative flex min-h-screen items-center justify-center overflow-hidden" style={{ paddingTop: "4rem" }}>
+        <div className="absolute inset-0">
+          <div className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-60" style={{ backgroundImage: "url('/images/abstract-background.jpeg')" }} />
+          <div className="absolute inset-0 bg-white/20" />
+        </div>
+
+        <div className="relative z-10 mx-auto max-w-4xl px-4 text-center">
+          <Image src="/images/Logo.png" alt="Linasoul Logo" width={400} height={150} priority className="mx-auto block" />
+          <p className="mx-auto mb-12 max-w-2xl text-lg leading-relaxed text-gray-700 drop-shadow-md">
+            Fließende Formen und ätherische Farben, die die Seele berühren und zum Nachdenken anregen – Entdecke meine Kunst der tiefsten Emotionen.
+          </p>
+          <Button
+            size="lg"
+            className="rounded-full bg-[#f9f5ec] px-8 py-3 text-gray-800 shadow-lg hover:bg-[#f2e8dc]"
+            onClick={() => {
+              track("CTA To Gallery")
+              document.getElementById("gallery")?.scrollIntoView({ behavior: "smooth" })
+            }}
+          >
+            Zur Galerie
+          </Button>
+        </div>
+      </section>
+
+      {/* About */}
+      <section id="about" className="bg-white py-20">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="grid items-center gap-12 md:grid-cols-2">
+            <div>
+              <h2 className="mb-6 text-4xl font-light text-gray-800">Über die Künstlerin</h2>
+              <div className="space-y-4 leading-relaxed text-gray-600">
+                <p>Willkommen in meiner Welt der abstrakten Kunst! Ich bin Selina und meine Gemälde sind eine Reise zu den unsichtbaren Verbindungen zwischen Gefühlen, Erinnerungen und der Natur.</p>
+                <p>Jedes Gemälde entsteht aus einer intuitiven Antwort auf ein Gefühl oder einen Augenblick. Durch das Schichten von Acrylfarben und Texturen erzeuge ich Tiefe und Bewegung und lasse das Gemälde sich organisch auf der Leinwand entfalten.</p>
+                <p>Das Ergebnis sind lebendige und ausdrucksstarke Gemälde, die eine ganz eigene Geschichte erzählen.</p>
+              </div>
+              <div className="mt-8 flex items-center space-x-4">
+                <Heart className="h-5 w-5 text-taupe-400" />
+                <span className="text-gray-600">Creating art that touches the soul</span>
+              </div>
+            </div>
+            <div className="relative">
+              <div className="aspect-square overflow-hidden rounded-2xl shadow-2xl">
+                <Image src="/images/AboutMe1.jpeg" alt="Lina in her studio" width={500} height={500} className="object-cover" />
+              </div>
+              <div className="absolute -bottom-6 -right-6 flex h-24 w-24 items-center justify-center rounded-full bg-taupe-100">
+                <Palette className="h-8 w-8 text-taupe-400" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Gallery */}
+      <section id="gallery" className="bg-gradient-to-br from-taupe-50 to-taupe-100 py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-16 text-center">
+            <h2 className="mb-4 text-4xl font-light text-gray-800">Galerie</h2>
+            <p className="mx-auto max-w-2xl text-lg text-gray-600">
+              Meine Welt in Farbe: Tauche ein in meine neuesten abstrakten Gemälde. Lass Dich von den Geschichten aus Farbe, Form und Textur verzaubern.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {artworks.map((artwork) => (
+              <ArtworkCard
+                key={artwork.id}
+                artwork={artwork}
+                onZoom={(src) => {
+                  setZoomSrc(src)
+                  setZoomLevel(1)
                 }}
               />
-            </div>
+            ))}
           </div>
-        )}
-      </div>
+        </div>
+      </section>
+
+      {/* Contact */}
+      <section id="contact" className="bg-gradient-to-br from-taupe-50 to-blue-50 py-20">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="grid gap-12 md:grid-cols-2">
+            <div>
+              <h2 className="mb-6 text-4xl font-light text-gray-800">Kontaktanfrage</h2>
+              <p className="mb-8 text-lg text-gray-600">
+                Hat eines meiner Werke Dein Herz berührt? Ich freue mich auf Deine Anfrage!
+              </p>
+
+              <div className="space-y-4">
+                <div className="flex items-center space-x-3">
+                  <Mail className="h-5 w-5 text-taupe-400" />
+                  <span className="text-gray-600">linasoul.art@gmx.de</span>
+                </div>
+                <div className="flex items-center space-x-3">
+                  <MapPin className="h-5 w-5 text-taupe-400" />
+                  <span className="text-gray-600">Leonberg, Stuttgart</span>
+                </div>
+              </div>
+            </div>
+
+            <Card className="border-0 shadow-lg">
+              <CardContent className="p-8">
+                <form onSubmit={handleContactSubmit} className="space-y-6">
+                  <div>
+                    <Label htmlFor="contact-name">Name</Label>
+                    <Input id="contact-name" value={contactForm.name} onChange={(e) => setContactForm((prev) => ({ ...prev, name: e.target.value }))} className="mt-1" required />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="contact-email">Email</Label>
+                    <Input id="contact-email" type="email" value={contactForm.email} onChange={(e) => setContactForm((prev) => ({ ...prev, email: e.target.value }))} className="mt-1" required />
+                  </div>
+
+                  <div>
+                    <Label htmlFor="contact-message">Nachricht</Label>
+                    <Textarea id="contact-message" value={contactForm.message} onChange={(e) => setContactForm((prev) => ({ ...prev, message: e.target.value }))} placeholder="Deine Nachricht..." className="mt-1 min-h-[120px]" required />
+                  </div>
+
+                  <Button type="submit" className="w-full bg-[#f9f5ec] text-gray-800 hover:bg-[#f2e8dc]" size="lg">
+                    Anfrage senden
+                  </Button>
+                </form>
+              </CardContent>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-gray-800 py-12 text-white">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="text-center">
+            <div className="flex justify-center items-center h-16">
+              <Link href="#home" className="inline-flex items-center">
+                <Image src="/images/Logo_weiss_2.png" alt="Linasoul Logo" width={120} height={40} priority className="block" />
+              </Link>
+            </div>
+            <p className="mb-4 text-gray-400">Abstract Acrylic Artist • Creating art that touches the soul</p>
+            <p className="text-sm text-gray-500">© 2025 Linasoul.art</p>
+          </div>
+        </div>
+      </footer>
+
+      {/* Zoom Lightbox */}
+      {zoomSrc && (
+        <div
+          className="fixed inset-0 z-[9990] flex items-center justify-center bg-black/80 p-4"
+          onClick={() => { setZoomSrc(null); setZoomLevel(1) }}
+        >
+          <button
+            aria-label="Close"
+            className="absolute right-4 top-4 z-[10000] rounded-full bg-white/90 p-2 shadow hover:bg-white"
+            onClick={(e) => {
+              e.stopPropagation()
+              setZoomSrc(null)
+              setZoomLevel(1)
+            }}
+          >
+            <X className="h-5 w-5 text-gray-800" />
+          </button>
+
+          <div className="relative z-[9995] max-h-full max-w-6xl overflow-auto">
+            <img
+              src={zoomSrc!}
+              alt="Zoomed artwork"
+              className="mx-auto block cursor-zoom-in transition-transform duration-200"
+              style={{ transform: `scale(${zoomLevel})`, transformOrigin: "center" }}
+              onClick={(e) => {
+                e.stopPropagation()
+                setZoomLevel((z) => (z === 1 ? 1.6 : 1))
+              }}
+            />
+          </div>
+        </div>
+      )}
+    </div>
   )
 }
