@@ -29,13 +29,7 @@ export default function ImpressumPage() {
         Für den Inhalt der verlinkten Seiten sind ausschließlich deren Betreiber verantwortlich.
       </p>
 
-      <h2 className="mt-8 mb-2 text-xl font-semibold">Online-Streitbeilegung</h2>
-      <p>
-        Die Europäische Kommission stellt eine Plattform zur Online-Streitbeilegung (OS) bereit:{" "}
-        <a href="https://ec.europa.eu/consumers/odr" className="underline" target="_blank" rel="noopener noreferrer">
-          https://ec.europa.eu/consumers/odr
-        </a>
-      </p>
+
     </main>
   )
 }
