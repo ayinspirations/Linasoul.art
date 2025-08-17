@@ -393,29 +393,48 @@ export default function LinasoulPortfolio() {
       </section>
 
       {/* Gallery */}
-      <section id="gallery" className="bg-gradient-to-br from-taupe-50 to-taupe-100 py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-16 text-center">
-            <h2 className="mb-4 text-4xl font-light text-gray-800">Galerie</h2>
-            <p className="mx-auto max-w-2xl text-lg text-gray-600">
-              Meine Welt in Farbe: Tauche ein in meine neuesten abstrakten Gemälde. Lass Dich von den Geschichten aus Farbe, Form und Textur verzaubern.
-            </p>
-          </div>
+    {/* Gallery */}
+<section id="gallery" className="bg-gradient-to-br from-taupe-50 to-taupe-100 py-20">
+  <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+    <div className="mb-16 text-center">
+      <h2 className="mb-4 text-4xl font-light text-gray-800">Galerie</h2>
+      {/* Neue SEO-optimierte Einleitung */}
+      <div className="mx-auto max-w-3xl space-y-4 text-lg leading-relaxed text-gray-600">
+        <p>
+          Jedes meiner <strong>Acrylbilder auf Leinwand</strong> ist mehr als nur Farbe – 
+          es ist ein Ausdruck von Gefühl, Energie und Intuition. 
+          In einem meditativen Prozess lasse ich Formen und Strukturen entstehen, 
+          die den Raum mit einer einzigartigen Atmosphäre füllen.
+        </p>
+        <p>
+          Viele meiner Kundinnen und Kunden erzählen, dass sie „ihr Bild“ gefunden haben – 
+          ein Werk, das sie auf besondere Weise berührt. 
+          Genau das ist meine Intention: <em>Kunstwerke zu schaffen, die inspirieren, 
+          berühren und ein Leben lang begleiten.</em>
+        </p>
+        <p>
+          In dieser Galerie finden Sie eine Auswahl handgemalter 
+          <strong> Acrylgemälde </strong>, die Sie direkt online kaufen können. 
+          Ob als Blickfang im Wohnzimmer, beruhigende Präsenz im Schlafzimmer oder inspirierendes Highlight im Büro – 
+          ein abstraktes <strong>Acrylbild</strong> verleiht jedem Raum Charakter und Tiefe.
+        </p>
+      </div>
+    </div>
 
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {artworks.map((artwork) => (
-              <ArtworkCard
-                key={artwork.id}
-                artwork={artwork}
-                onZoom={(src) => {
-                  setZoomSrc(src)
-                  setZoomLevel(1)
-                }}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
+    <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+      {artworks.map((artwork) => (
+        <ArtworkCard
+          key={artwork.id}
+          artwork={artwork}
+          onZoom={(src) => {
+            setZoomSrc(src)
+            setZoomLevel(1)
+          }}
+        />
+      ))}
+    </div>
+  </div>
+</section>
 
       {/* Contact */}
       <section id="contact" className="bg-gradient-to-br from-taupe-50 to-blue-50 py-20">
