@@ -2,11 +2,14 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ShoppingCart, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { useCart } from "../cart/CartProvider"
+
+// Vercel Analytics
+import { track } from "@vercel/analytics"
 
 function CartButton() {
   const { count } = useCart()
@@ -46,9 +49,26 @@ export default function CartPage() {
   // Mobile Drawer
   const [mobileOpen, setMobileOpen] = useState(false)
 
+  // --- Analytics: Cart Viewed (beim ersten Render) ---
+  useEffect(() => {
+    track("Cart Viewed", {
+      items: items.length,
+      total_eur: (totalCents || 0) / 100,
+    })
+    // absichtlich nur beim ersten Mount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
   async function checkout() {
     if (!agb || !widerruf || !versand) return
     setBusy(true)
+
+    // --- Analytics: Checkout Button geklickt ---
+    track("Checkout Clicked", {
+      items: items.length,
+      total_eur: (totalCents || 0) / 100,
+    })
+
     try {
       // NUR IDs senden – deine /api/checkout erwartet string[]
       const res = await fetch("/api/checkout", {
@@ -58,6 +78,13 @@ export default function CartPage() {
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json?.error || "Checkout fehlgeschlagen")
+
+      // --- Analytics: Checkout wird gestartet (vor Redirect) ---
+      track("Checkout Initiated", {
+        items: items.length,
+        total_eur: (totalCents || 0) / 100,
+      })
+
       window.location.href = json.url
     } catch (e) {
       alert((e as Error).message)
@@ -168,7 +195,14 @@ export default function CartPage() {
                       <button
                         className="rounded-full p-1 hover:bg-gray-100"
                         aria-label="Entfernen"
-                        onClick={() => remove(it.id)}
+                        onClick={() => {
+                          // --- Analytics: Remove From Cart ---
+                          track("Remove From Cart", {
+                            artwork_id: it.id,
+                            price_eur: (it.price_cents || 0) / 100,
+                          })
+                          remove(it.id)
+                        }}
                       >
                         <X className="h-5 w-5 text-gray-600" />
                       </button>
@@ -217,7 +251,14 @@ export default function CartPage() {
                   <button
                     type="button"
                     className="w-full text-sm underline text-gray-600 hover:text-gray-800"
-                    onClick={clear}
+                    onClick={() => {
+                      // --- Analytics: Cart Cleared ---
+                      track("Cart Cleared", {
+                        items: items.length,
+                        total_eur: (totalCents || 0) / 100,
+                      })
+                      clear()
+                    }}
                   >
                     Warenkorb leeren
                   </button>
