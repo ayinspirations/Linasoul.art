@@ -437,54 +437,59 @@ export default function LinasoulPortfolio() {
 </section>
 
       {/* Contact */}
-      <section id="contact" className="bg-gradient-to-br from-taupe-50 to-blue-50 py-20">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="grid gap-12 md:grid-cols-2">
-            <div>
-              <h2 className="mb-6 text-4xl font-light text-gray-800">Kontaktanfrage</h2>
-              <p className="mb-8 text-lg text-gray-600">
-                Hat eines meiner Werke Dein Herz berührt? Ich freue mich auf Deine Anfrage!
-              </p>
+<section id="contact" className="bg-gradient-to-br from-taupe-50 to-blue-50 py-20">
+  <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
+    <div className="text-center">
+      <h2 className="mb-6 text-4xl font-light text-gray-800">Kontaktanfrage</h2>
+      <p className="mb-8 text-lg text-gray-600">
+        Hat eines meiner Werke Dein Herz berührt? Ich freue mich auf Deine Anfrage!
+      </p>
 
-              <div className="space-y-4">
-                <div className="flex items-center space-x-3">
-                  <Mail className="h-5 w-5 text-taupe-400" />
-                  <span className="text-gray-600">linasoul.art@gmx.de</span>
-                </div>
-                <div className="flex items-center space-x-3">
-                  <MapPin className="h-5 w-5 text-taupe-400" />
-                  <span className="text-gray-600">Leonberg, Stuttgart</span>
-                </div>
-              </div>
+      {/* Kontakt-Infos */}
+      <div className="mb-10 space-y-4">
+        <div className="flex justify-center items-center space-x-3">
+          <Mail className="h-5 w-5 text-taupe-400" />
+          <span className="text-gray-600">linasoul.art@gmx.de</span>
+        </div>
+        <div className="flex justify-center items-center space-x-3">
+          <MapPin className="h-5 w-5 text-taupe-400" />
+          <span className="text-gray-600">Leonberg, Stuttgart</span>
+        </div>
+      </div>
+
+      {/* Formular mit mailto */}
+      <Card className="border-0 shadow-lg mx-auto max-w-md">
+        <CardContent className="p-8">
+          <form
+            action="mailto:linasoul.art@gmx.de"
+            method="POST"
+            encType="text/plain"
+            className="space-y-6"
+          >
+            <div>
+              <Label htmlFor="contact-message">Nachricht</Label>
+              <Textarea
+                id="contact-message"
+                name="message"
+                placeholder="Deine Nachricht..."
+                className="mt-1 min-h-[120px]"
+                required
+              />
             </div>
 
-            <Card className="border-0 shadow-lg">
-              <CardContent className="p-8">
-                <form onSubmit={handleContactSubmit} className="space-y-6">
-                  <div>
-                    <Label htmlFor="contact-name">Name</Label>
-                    <Input id="contact-name" value={contactForm.name} onChange={(e) => setContactForm((prev) => ({ ...prev, name: e.target.value }))} className="mt-1" required />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="contact-email">Email</Label>
-                    <Input id="contact-email" type="email" value={contactForm.email} onChange={(e) => setContactForm((prev) => ({ ...prev, email: e.target.value }))} className="mt-1" required />
-                  </div>
-
-                  <div>
-                    <Label htmlFor="contact-message">Nachricht</Label>
-                    <Textarea id="contact-message" value={contactForm.message} onChange={(e) => setContactForm((prev) => ({ ...prev, message: e.target.value }))} placeholder="Deine Nachricht..." className="mt-1 min-h-[120px]" required />
-                  </div>
-
-                  <Button type="submit" className="w-full bg-[#f9f5ec] text-gray-800 hover:bg-[#f2e8dc]" size="lg">
-                    Anfrage senden
-                  </Button>
-                </form>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
+            <Button
+              type="submit"
+              className="w-full bg-[#f9f5ec] text-gray-800 hover:bg-[#f2e8dc]"
+              size="lg"
+            >
+              Anfrage senden
+            </Button>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  </div>
+</section>
 
       {/* Zoom Lightbox */}
       {zoomSrc && (
