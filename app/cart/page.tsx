@@ -299,36 +299,6 @@ export default function CartPage() {
           </div>
         </div>
       </main>
-
-      {/* Footer wie Startseite */}
-     <footer className="bg-gray-800 py-12 text-white">
-  <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-    <div className="text-center space-y-4">
-      <div className="flex justify-center items-center h-16">
-        <Link href="/" className="inline-flex items-center">
-          <Image
-            src="/images/Logo_weiss_2.png"
-            alt="Linasoul Logo"
-            width={120}
-            height={40}
-            priority
-            className="block"
-          />
-        </Link>
-      </div>
-      <p className="text-gray-400">
-        Abstract Acrylic Artist • Creating art that touches the soul
-      </p>
-      <p className="space-x-4 text-sm text-gray-300">
-        <Link href="/agb" className="underline hover:text-white">AGB</Link>
-        <Link href="/widerruf" className="underline hover:text-white">Widerruf</Link>
-        <Link href="/impressum" className="underline hover:text-white">Impressum</Link>
-        <Link href="/datenschutz" className="underline hover:text-white">Datenschutz</Link>
-      </p>
-      <p className="text-sm text-gray-500">© 2025 Linasoul.art</p>
-    </div>
-  </div>
-</footer>
     </div>
   )
 }
