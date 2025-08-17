@@ -467,21 +467,6 @@ export default function LinasoulPortfolio() {
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="bg-gray-800 py-12 text-white">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="flex justify-center items-center h-16">
-              <Link href="#home" className="inline-flex items-center">
-                <Image src="/images/Logo_weiss_2.png" alt="Linasoul Logo" width={120} height={40} priority className="block" />
-              </Link>
-            </div>
-            <p className="mb-4 text-gray-400">Abstract Acrylic Artist • Creating art that touches the soul</p>
-            <p className="text-sm text-gray-500">© 2025 Linasoul.art</p>
-          </div>
-        </div>
-      </footer>
-
       {/* Zoom Lightbox */}
       {zoomSrc && (
         <div
