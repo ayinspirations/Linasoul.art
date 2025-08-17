@@ -4,7 +4,7 @@ import Link from "next/link"
 import Image from "next/image"
 import { useState } from "react"
 import { ShoppingCart } from "lucide-react"
-import { useCart } from "../cart/CartProvider"
+import { useCart } from "../app/cart/CartProvider"
 
 function CartButton() {
   const { count } = useCart()
