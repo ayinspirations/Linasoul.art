@@ -223,21 +223,52 @@ export default function CartPage() {
                 </div>
 
                 {items.length > 0 && (
-                  <div className="space-y-2 text-sm text-gray-700">
-                    <label className="flex items-start gap-2">
-                      <input type="checkbox" checked={agb} onChange={() => setAgb(v => !v)} className="mt-1" />
-                      <span>AGB akzeptieren</span>
-                    </label>
-                    <label className="flex items-start gap-2">
-                      <input type="checkbox" checked={widerruf} onChange={() => setWiderruf(v => !v)} className="mt-1" />
-                      <span>Widerrufsbelehrung gelesen</span>
-                    </label>
-                    <label className="flex items-start gap-2">
-                      <input type="checkbox" checked={versand} onChange={() => setVersand(v => !v)} className="mt-1" />
-                      <span>Versand-/Lieferbedingungen akzeptieren</span>
-                    </label>
-                  </div>
-                )}
+  <div className="space-y-2 text-sm text-gray-700">
+    <label className="flex items-start gap-2">
+      <input
+        type="checkbox"
+        checked={agb}
+        onChange={() => setAgb(v => !v)}
+        className="mt-1"
+      />
+      <span>
+        Ich akzeptiere die{" "}
+        <Link href="/agb" className="underline hover:text-gray-900">
+          AGB
+        </Link>
+      </span>
+    </label>
+    <label className="flex items-start gap-2">
+      <input
+        type="checkbox"
+        checked={widerruf}
+        onChange={() => setWiderruf(v => !v)}
+        className="mt-1"
+      />
+      <span>
+        Ich habe die{" "}
+        <Link href="/widerruf" className="underline hover:text-gray-900">
+          Widerrufsbelehrung
+        </Link>{" "}
+        gelesen
+      </span>
+    </label>
+    <label className="flex items-start gap-2">
+      <input
+        type="checkbox"
+        checked={versand}
+        onChange={() => setVersand(v => !v)}
+        className="mt-1"
+      />
+      <span>
+        Ich akzeptiere die{" "}
+        <Link href="/versand" className="underline hover:text-gray-900">
+          Versand- und Lieferbedingungen
+        </Link>
+      </span>
+    </label>
+  </div>
+)}
 
                 <Button
                   className="w-full bg-[#f9f5ec] text-gray-800 hover:bg-[#f2e8dc]"
@@ -270,19 +301,34 @@ export default function CartPage() {
       </main>
 
       {/* Footer wie Startseite */}
-      <footer className="bg-gray-800 py-12 text-white">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="text-center">
-            <div className="flex justify-center items-center h-16">
-              <Link href="/" className="inline-flex items-center">
-                <Image src="/images/Logo_weiss_2.png" alt="Linasoul Logo" width={120} height={40} priority className="block" />
-              </Link>
-            </div>
-            <p className="mb-4 text-gray-400">Abstract Acrylic Artist • Creating art that touches the soul</p>
-            <p className="text-sm text-gray-500">© 2025 Linasoul.art</p>
-          </div>
-        </div>
-      </footer>
+     <footer className="bg-gray-800 py-12 text-white">
+  <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+    <div className="text-center space-y-4">
+      <div className="flex justify-center items-center h-16">
+        <Link href="/" className="inline-flex items-center">
+          <Image
+            src="/images/Logo_weiss_2.png"
+            alt="Linasoul Logo"
+            width={120}
+            height={40}
+            priority
+            className="block"
+          />
+        </Link>
+      </div>
+      <p className="text-gray-400">
+        Abstract Acrylic Artist • Creating art that touches the soul
+      </p>
+      <p className="space-x-4 text-sm text-gray-300">
+        <Link href="/agb" className="underline hover:text-white">AGB</Link>
+        <Link href="/widerruf" className="underline hover:text-white">Widerruf</Link>
+        <Link href="/impressum" className="underline hover:text-white">Impressum</Link>
+        <Link href="/datenschutz" className="underline hover:text-white">Datenschutz</Link>
+      </p>
+      <p className="text-sm text-gray-500">© 2025 Linasoul.art</p>
+    </div>
+  </div>
+</footer>
     </div>
   )
 }
