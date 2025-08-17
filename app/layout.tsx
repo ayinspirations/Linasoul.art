@@ -11,13 +11,9 @@ import Navbar from "@/components/navbar"
 import Footer from "@/components/footer"
 
 export const metadata: Metadata = {
-  metadataBase: new URL("https://linasoul.art"),
-  title: {
-    default: "Acrylbilder & Acrylgemälde kaufen – Linasoul Art",
-    template: "%s | Linasoul Art",
-  },
-  description:
-    "Einzigartige abstrakte Acrylbilder & Acrylgemälde auf Leinwand von Selina Sickinger. Originale moderne Kunst direkt online kaufen – handgemalt, einzigartig, hochwertig.",
+  title: "Linasoul Art – Acrylbilder & Acrylgemälde kaufen | Selina Sickinger",
+  description: "Entdecken Sie handgemalte Acrylbilder und Acrylgemälde von Selina Sickinger. Jedes Werk ist einzigartig – moderne Kunst auf Leinwand für Ihr Zuhause.",
+},
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
