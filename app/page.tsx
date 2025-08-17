@@ -441,19 +441,7 @@ export default function LinasoulPortfolio() {
       <p className="mb-8 text-lg text-gray-600">
         Hat eines meiner Werke Dein Herz berührt? Ich freue mich auf Deine Anfrage!
       </p>
-
-      {/* Kontakt-Infos */}
-      <div className="mb-10 space-y-4">
-        <div className="flex justify-center items-center space-x-3">
-          <Mail className="h-5 w-5 text-taupe-400" />
-          <span className="text-gray-600">linasoul.art@gmx.de</span>
-        </div>
-        <div className="flex justify-center items-center space-x-3">
-          <MapPin className="h-5 w-5 text-taupe-400" />
-          <span className="text-gray-600">Leonberg, Stuttgart</span>
-        </div>
-      </div>
-
+      
       {/* Formular mit mailto */}
       <Card className="border-0 shadow-lg mx-auto max-w-md">
         <CardContent className="p-8">
