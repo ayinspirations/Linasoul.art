@@ -19,7 +19,7 @@ export default function Footer() {
         </div>
 
         {/* Claim */}
-        <p className="mb-2 text-gray-300">
+        <p className="mb-2 text-black">
           Abstract Acrylic Artist • Creating art that touches the soul
         </p>
 
