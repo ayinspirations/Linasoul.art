@@ -3,10 +3,7 @@ import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import "./globals.css"
 
-// Cart (global!)
 import { CartProvider } from "./cart/CartProvider"
-
-// Vercel Web Analytics
 import { Analytics } from "@vercel/analytics/react"
 
 export const metadata: Metadata = {
@@ -31,24 +28,39 @@ html {
       </head>
       <body className="flex min-h-screen flex-col">
         <CartProvider>
-          {/* Seiteninhalt */}
-          <div className="flex-grow">
-            {children}
-          </div>
+          <div className="flex-grow">{children}</div>
 
-          {/* Footer mit Pflichtlinks */}
-          <footer className="mt-12 border-t border-gray-200 bg-gray-50 py-6 text-center text-sm text-gray-600">
-            <p>© {new Date().getFullYear()} Linasoul.art · Selina Sickinger</p>
-            <p className="mt-2 space-x-4">
-              <a href="/agb" className="underline hover:text-gray-900">AGB</a>
-              <a href="/widerruf" className="underline hover:text-gray-900">Widerruf</a>
-              <a href="/impressum" className="underline hover:text-gray-900">Impressum</a>
-              <a href="/datenschutz" className="underline hover:text-gray-900">Datenschutz</a>
-            </p>
+          {/* Globaler Footer (blau + Logo) */}
+          <footer className="bg-[#1f2a37] text-white">
+            <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8 py-12 text-center">
+              <div className="flex justify-center items-center h-16 mb-4">
+                {/* Weißes Logo auf dunklem Blau */}
+                <img
+                  src="/images/Logo_weiss_2.png"
+                  alt="Linasoul Logo"
+                  width={120}
+                  height={40}
+                />
+              </div>
+
+              <p className="text-white/80">
+                Abstract Acrylic Artist • Creating art that touches the soul
+              </p>
+
+              <p className="mt-2 text-white/60">
+                © {new Date().getFullYear()} Linasoul.art · Selina Sickinger
+              </p>
+
+              <p className="mt-4 space-x-4 text-sm">
+                <a href="/agb" className="underline hover:text-white">AGB</a>
+                <a href="/widerruf" className="underline hover:text-white">Widerruf</a>
+                <a href="/impressum" className="underline hover:text-white">Impressum</a>
+                <a href="/datenschutz" className="underline hover:text-white">Datenschutz</a>
+              </p>
+            </div>
           </footer>
         </CartProvider>
 
-        {/* Vercel Analytics aktivieren */}
         <Analytics />
       </body>
     </html>
