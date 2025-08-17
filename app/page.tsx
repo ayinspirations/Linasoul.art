@@ -176,21 +176,15 @@ export default function LinasoulPortfolio() {
     return (
       <Card className="group overflow-hidden border-0 shadow-lg transition-all duration-300 hover:shadow-2xl">
         <div className="relative aspect-[3/4] overflow-hidden">
-          <Image
-            src={artwork.images && artwork.images[idx] ? artwork.images[idx] : "/placeholder.svg"}
-            alt={artwork.title}
-            width={400}
-            height={600}
-            className="h-full w-full cursor-zoom-in object-cover transition-transform duration-300 group-hover:scale-105"
-            onClick={() => {
-              if (artwork.images && artwork.images[idx]) {
-                // --- Analytics: Bild-Zoom ---
-                track("Image Zoom", { artwork_id: artwork.id })
-                onZoom(artwork.images[idx])
-              }
-            }}
-          />
-
+        <Image
+  src={artwork.images && artwork.images[idx] ? artwork.images[idx] : "/placeholder.svg"}
+  alt={`${artwork.title} – Acrylbild auf Leinwand von Selina Sickinger (abstrakte Acrylmalerei)`}
+  width={400}
+  height={600}
+  sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+  className="h-full w-full cursor-zoom-in object-cover transition-transform duration-300 group-hover:scale-105"
+  onClick={() => artwork.images && artwork.images[idx] && onZoom(artwork.images[idx])}
+/>
           {hasMultiple && (
             <>
               <button
