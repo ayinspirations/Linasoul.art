@@ -11,7 +11,6 @@ export default function Footer() {
           </Link>
         </div>
         <p className="mb-2 text-gray-300">Abstract Acrylic Artist • Creating art that touches the soul</p>
-        <p className="mb-6 text-sm text-gray-400">© 2025 Linasoul.art</p>
 
         <div className="space-x-4 text-sm">
           <Link href="/impressum" className="hover:underline">Impressum</Link>
