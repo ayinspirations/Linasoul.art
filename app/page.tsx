@@ -219,28 +219,33 @@ export default function LinasoulPortfolio() {
           {artwork.size ? <p className="mb-1 text-sm text-gray-500">{artwork.size}</p> : null}
           {artwork.description ? <ArtworkDescription text={artwork.description} /> : null}
 
-          <div className="flex items-center justify-between">
-            <span className="text-lg font-medium text-black">{priceFmt}</span>
-            {artwork.available ? (
-              <Button
-                size="sm"
-                className="bg-[#f9f5ec] text-gray-800 hover:bg-[#f2e8dc]"
-                onClick={() =>
-                  add({
-                    id: artwork.id,
-                    title: artwork.title,
-                    price_cents: artwork.price_cents ?? 0,
-                    currency: artwork.currency || "eur",
-                    image: artwork.images?.[0] ?? null,
-                  })
-                }
-              >
-                In den Warenkorb
-              </Button>
-            ) : (
-              <span className="text-sm text-gray-500">Nicht Verfügbar</span>
-            )}
-          </div>
+         <div className="flex items-center justify-between">
+  {artwork.available ? (
+    <span className="text-lg font-medium text-black">{priceFmt}</span>
+  ) : (
+    <span aria-hidden className="inline-block" />
+  )}
+
+  {artwork.available ? (
+    <Button
+      size="sm"
+      className="bg-[#f9f5ec] text-gray-800 hover:bg-[#f2e8dc]"
+      onClick={() =>
+        add({
+          id: artwork.id,
+          title: artwork.title,
+          price_cents: artwork.price_cents ?? 0,
+          currency: artwork.currency || "eur",
+          image: artwork.images?.[0] ?? null,
+        })
+      }
+    >
+      In den Warenkorb
+    </Button>
+  ) : (
+    <span className="text-sm text-gray-500">Verkauft</span>
+  )}
+</div>
         </CardContent>
       </Card>
     )
