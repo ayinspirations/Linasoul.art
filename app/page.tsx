@@ -223,36 +223,57 @@ export default function LinasoulPortfolio() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-taupe-50 via-white to-blue-50">
       {/* Hero */}
-      <section id="home" className="relative flex min-h-[70vh] items-center justify-center overflow-hidden">
-        <div className="absolute inset-0">
-          <div
-            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-60"
-            style={{ backgroundImage: "url('/images/abstract-background.jpeg')" }}
-          />
-          <div className="absolute inset-0 bg-white/20" />
-        </div>
+<section
+  id="home"
+  className="relative flex min-h-[80vh] flex-col items-center justify-center overflow-hidden text-center"
+>
+  {/* Hintergrund */}
+  <div className="absolute inset-0">
+    <div
+      className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-60"
+      style={{ backgroundImage: "url('/images/abstract-background.jpeg')" }}
+    />
+    <div className="absolute inset-0 bg-white/20" />
+  </div>
 
-        <div className="relative z-10 mx-auto max-w-4xl px-4 text-center">
-          <h1 className="mt-6 mb-4 text-3xl font-light text-gray-900">
-            Abstrakte Acrylbilder von Lina – moderne Kunst auf Leinwand
-          </h1>
-          <p className="mx-auto mb-12 max-w-2xl text-lg leading-relaxed text-gray-700 drop-shadow-md">
-            Willkommen bei <strong>Linasoul Art</strong>. Ich bin Selina („Lina“) Sickinger und male{" "}
-            <em>abstrakte Acrylgemälde</em>, die Emotionen sichtbar machen: ruhige Naturtöne, kraftvolle Strukturen
-            und moderne Kompositionen für Zuhause oder Büro. Entdecke originale <strong>abstrakte Bilder</strong> auf Leinwand – jedes Werk ist handgemalt und ein Unikat.
-          </p>
-          <Button
-            size="lg"
-            className="rounded-full bg-[#f9f5ec] px-8 py-3 text-gray-800 shadow-lg hover:bg-[#f2e8dc]"
-            onClick={() => {
-              track("CTA To Gallery")
-              document.getElementById("gallery")?.scrollIntoView({ behavior: "smooth" })
-            }}
-          >
-            Zur Galerie
-          </Button>
-        </div>
-      </section>
+  {/* Inhalt */}
+  <div className="relative z-10 mx-auto max-w-4xl px-4">
+    {/* Logo zentral */}
+    <Image
+      src="/images/Logo.png"
+      alt="Linasoul Logo"
+      width={420}
+      height={180}
+      priority
+      className="mx-auto mb-8 block"
+    />
+
+    {/* Headline */}
+    <h1 className="mb-6 text-3xl font-light text-gray-900">
+      Abstrakte Acrylbilder von Lina – moderne Kunst auf Leinwand
+    </h1>
+
+    {/* Einleitung */}
+    <p className="mx-auto mb-12 max-w-2xl text-lg leading-relaxed text-gray-700 drop-shadow-md">
+      Willkommen bei <strong>Linasoul Art</strong>. Ich bin Selina („Lina“) Sickinger und male{" "}
+      <em>abstrakte Acrylgemälde</em>, die Emotionen sichtbar machen: ruhige Naturtöne, kraftvolle Strukturen
+      und moderne Kompositionen für Zuhause oder Büro. Entdecke originale{" "}
+      <strong>abstrakte Bilder</strong> auf Leinwand – jedes Werk ist handgemalt und ein Unikat.
+    </p>
+
+    {/* CTA */}
+    <Button
+      size="lg"
+      className="rounded-full bg-[#f9f5ec] px-8 py-3 text-gray-800 shadow-lg hover:bg-[#f2e8dc]"
+      onClick={() => {
+        track("CTA To Gallery")
+        document.getElementById("gallery")?.scrollIntoView({ behavior: "smooth" })
+      }}
+    >
+      Zur Galerie
+    </Button>
+  </div>
+</section>
 
       {/* Galerie (direkt nach Hero) */}
       <section id="gallery" className="bg-gradient-to-br from-taupe-50 to-taupe-100 py-20">
