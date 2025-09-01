@@ -222,12 +222,12 @@ export default function LinasoulPortfolio() {
   // ---------- Seite ----------
   return (
     <div className="min-h-screen bg-gradient-to-br from-taupe-50 via-white to-blue-50">
-      {/* Hero */}
+     {/* Hero */}
 <section
   id="home"
   className="relative flex min-h-[80vh] flex-col items-center justify-center overflow-hidden text-center"
 >
-  {/* Hintergrund */}
+  {/* Hintergrundbild + Overlay */}
   <div className="absolute inset-0">
     <div
       className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-60"
@@ -237,28 +237,27 @@ export default function LinasoulPortfolio() {
   </div>
 
   {/* Inhalt */}
-  <div className="relative z-10 mx-auto max-w-4xl px-4">
-   {/* Logo zentral */}
-<Image
-  src="/images/Logo.png"
-  alt="Linasoul Logo"
-  width={300}
-  height={130}
-  priority
-  className="mx-auto mb-2 block"
-/>
+  <div className="relative z-10 mx-auto w-full max-w-4xl px-4">
+    {/* Logo zentral – mobil kompakt, Desktop größer; sehr kleiner Abstand darunter */}
+    <Image
+      src="/images/Logo.png"
+      alt="Linasoul Logo"
+      width={420}
+      height={180}
+      priority
+      className="mx-auto block h-auto w-48 sm:w-64 md:w-80 lg:w-[22rem] mb-1 sm:mb-2"
+    />
 
-{/* Headline */}
-<h1 className="text-3xl font-light text-gray-900">
-  Abstrakte Acrylbilder von Lina – moderne Kunst auf Leinwand
-</h1>
+    {/* Headline – mobil 2xl/3xl, Desktop 4xl; enger zum Logo */}
+    <h1 className="mb-2 sm:mb-3 text-2xl sm:text-3xl md:text-4xl font-light text-gray-900">
+      Abstrakte Acrylbilder von Lina – moderne Kunst auf Leinwand
+    </h1>
 
-
-    {/* Einleitung */}
-    <p className="mx-auto mb-8 max-w-2xl text-lg leading-relaxed text-gray-700 drop-shadow-md">
+    {/* Einleitung – mobil etwas kleiner, Desktop größer; moderater Abstand vor CTA */}
+    <p className="mx-auto mb-6 sm:mb-8 max-w-2xl text-base sm:text-lg leading-relaxed text-gray-700 drop-shadow-md">
       Willkommen bei <strong>Linasoul Art</strong>. Ich bin Selina („Lina“) Sickinger und male{" "}
-      <em>abstrakte Acrylgemälde</em>, die Emotionen sichtbar machen: ruhige Naturtöne, kraftvolle Strukturen
-      und moderne Kompositionen für Zuhause oder Büro. Entdecke originale{" "}
+      <em>abstrakte Acrylgemälde</em>, die Emotionen sichtbar machen: ruhige Naturtöne, kraftvolle
+      Strukturen und moderne Kompositionen für Zuhause oder Büro. Entdecke originale{" "}
       <strong>abstrakte Bilder</strong> auf Leinwand – jedes Werk ist handgemalt und ein Unikat.
     </p>
 
@@ -267,7 +266,8 @@ export default function LinasoulPortfolio() {
       size="lg"
       className="rounded-full bg-[#f9f5ec] px-8 py-3 text-gray-800 shadow-lg hover:bg-[#f2e8dc]"
       onClick={() => {
-        track("CTA To Gallery")
+        // optionales Analytics-Event, falls @vercel/analytics eingebunden ist
+        try { /* @ts-ignore */ track?.("CTA To Gallery") } catch {}
         document.getElementById("gallery")?.scrollIntoView({ behavior: "smooth" })
       }}
     >
