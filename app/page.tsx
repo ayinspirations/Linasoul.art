@@ -238,20 +238,21 @@ export default function LinasoulPortfolio() {
 
   {/* Inhalt */}
   <div className="relative z-10 mx-auto max-w-4xl px-4">
-    {/* Logo zentral */}
-    <Image
-      src="/images/Logo.png"
-      alt="Linasoul Logo"
-      width={420}
-      height={180}
-      priority
-      className="mx-auto mb-2 block"
-    />
+   {/* Logo zentral */}
+<Image
+  src="/images/Logo.png"
+  alt="Linasoul Logo"
+  width={300}
+  height={130}
+  priority
+  className="mx-auto mb-2 block"
+/>
 
-    {/* Headline */}
-    <h1 className="mb-4 text-3xl font-light text-gray-900">
-      Abstrakte Acrylbilder von Lina – moderne Kunst auf Leinwand
-    </h1>
+{/* Headline */}
+<h1 className="text-3xl font-light text-gray-900">
+  Abstrakte Acrylbilder von Lina – moderne Kunst auf Leinwand
+</h1>
+
 
     {/* Einleitung */}
     <p className="mx-auto mb-8 max-w-2xl text-lg leading-relaxed text-gray-700 drop-shadow-md">
