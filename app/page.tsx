@@ -136,81 +136,115 @@ export default function LinasoulPortfolio() {
 
   // ---------- Einzelkarte mit smooth Crossfade (ohne Flash, mobil-freundlich) ----------
 // ---------- Einzelkarte mit smooth Crossfade (ohne Flash, mobil-freundlich) ----------
+// ---------- Einzelkarte mit decode-Preload (kein Flash, mobil-sicher) ----------
 function ArtworkCard({ artwork, onZoom }: { artwork: Artwork; onZoom: (src: string) => void }) {
   const [currentIdx, setCurrentIdx] = useState(0)
-  const [nextIdx, setNextIdx] = useState<number | null>(null)
-  const [nextLoaded, setNextLoaded] = useState(false)
+  const [overlaySrc, setOverlaySrc] = useState<string | null>(null) // URL des kommenden Bildes
+  const [overlayVisible, setOverlayVisible] = useState(false)        // steuert Fade-In
   const { add } = useCart()
 
-  // Bilder sicher normalisieren
   const images = (artwork.images || []).filter((u) => typeof u === "string" && u.trim().length > 0)
   const total = images.length
   const hasMultiple = total > 1
 
-  // Preisformat
   const priceFmt = new Intl.NumberFormat("de-DE", {
     style: "currency",
     currency: (artwork.currency || "eur").toUpperCase(),
   }).format((artwork.price_cents ?? 0) / 100)
 
-  // Navigation: Zielindex vorbereiten (wir blenden erst ein, dann offiziell umschalten)
-  const go = (dir: "prev" | "next") => {
-    if (!total || total < 2) return
-    const target = dir === "next" ? (currentIdx + 1) % total : (currentIdx - 1 + total) % total
-    setNextIdx(target)
-    setNextLoaded(false)
+  const currentSrc = images[currentIdx] || "/placeholder.svg"
+
+  // Nächstes Bild vorbereiten: laden + DECODEN, dann erst anzeigen
+  async function prepareAndFadeTo(targetIdx: number) {
+    if (!total) return
+    const targetSrc = images[targetIdx]
+    if (!targetSrc) return
+
+    try {
+      const img = new window.Image()
+      img.crossOrigin = "anonymous" // harmless; hilft bei einigen CDNs gegen decode-hiccups
+      img.decoding = "async"
+      img.loading = "eager"         // lädt direkt (wir blenden erst nach decode ein)
+      img.src = targetSrc
+
+      // Warten bis komplett DEKODIERT (nicht nur geladen)
+      if (img.decode) {
+        await img.decode()
+      } else {
+        // Fallback für sehr alte Browser
+        await new Promise<void>((resolve) => {
+          if (img.complete) return resolve()
+          img.onload = () => resolve()
+          img.onerror = () => resolve()
+        })
+      }
+
+      // Overlay befüllen und einblenden
+      setOverlaySrc(targetSrc)
+      // ein Tick, damit CSS-Transition greift
+      requestAnimationFrame(() => setOverlayVisible(true))
+    } catch {
+      // Wenn Dekodieren fehlschlägt: hart umschalten ohne Fade (immer noch ohne Weiß, da current bleibt)
+      setCurrentIdx(targetIdx)
+      setOverlaySrc(null)
+      setOverlayVisible(false)
+    }
   }
 
-  // Nachbarbilder proaktiv vorladen (explizit window.Image, um Import-Konflikte zu vermeiden)
+  const go = (dir: "prev" | "next") => {
+    if (!hasMultiple) return
+    const target =
+      dir === "next" ? (currentIdx + 1) % total : (currentIdx - 1 + total) % total
+    // starte decode-Preload + späteres Fade
+    prepareAndFadeTo(target)
+  }
+
+  // Nach dem sichtbaren Fade den Index offiziell umstellen und Overlay entfernen
+  const handleOverlayTransitionEnd: React.TransitionEventHandler<HTMLImageElement> = (e) => {
+    if (e.propertyName !== "opacity") return
+    if (overlaySrc) {
+      const targetIdx = images.indexOf(overlaySrc)
+      if (targetIdx !== -1) setCurrentIdx(targetIdx)
+    }
+    // Overlay wieder abbauen
+    setOverlayVisible(false)
+    setOverlaySrc(null)
+  }
+
+  // Preload der Nachbarbilder (nur Quellen setzen; decode bei Bedarf oben)
   useEffect(() => {
-    if (!total || total < 2) return
+    if (!hasMultiple) return
     const ahead = new window.Image()
     ahead.src = images[(currentIdx + 1) % total] || ""
     const back = new window.Image()
     back.src = images[(currentIdx - 1 + total) % total] || ""
-  }, [currentIdx, total, images])
-
-  // Wenn die Überblendung fertig ist → Index umschalten (ohne Timeout-Jitter)
-  const handleFadeEnd: React.TransitionEventHandler<HTMLImageElement> = (e) => {
-    if (e.propertyName !== "opacity") return
-    if (nextIdx !== null && nextLoaded) {
-      setCurrentIdx(nextIdx)
-      setNextIdx(null)
-      setNextLoaded(false)
-    }
-  }
-
-  const currentSrc = images[currentIdx] || "/placeholder.svg"
-  const pendingSrc = nextIdx !== null ? images[nextIdx] : null
+  }, [currentIdx, hasMultiple, images, total])
 
   return (
     <Card className="group overflow-hidden border-0 shadow-lg transition-all duration-300 hover:shadow-2xl">
       {/* Bildbühne */}
       <div className="relative aspect-[3/4] overflow-hidden bg-[#f7f5f1]">
-        {/* Aktuelles Bild bleibt sichtbar, bis das neue vollständig eingeblendet ist */}
+        {/* Aktuelles Bild: bleibt stehen, bis Overlay fertig ist */}
         <img
-          key={`curr-${currentIdx}`}
           src={currentSrc}
           alt={`${artwork.title} – Acrylbild von Selina („Lina“) Sickinger`}
           className="absolute inset-0 h-full w-full object-cover cursor-zoom-in transition-transform duration-300 group-hover:scale-105"
           onClick={() => onZoom(currentSrc)}
           decoding="sync"
           loading="eager"
-          style={{ willChange: "transform" }}
+          style={{ willChange: "transform", transform: "translateZ(0)" }}
         />
 
-        {/* Neues Bild: unsichtbar laden, dann weich einblenden; erst danach Index wechseln */}
-        {pendingSrc && (
+        {/* Overlay-Bild: wird erst nach vollständigem DECODE eingeblendet */}
+        {overlaySrc && (
           <img
-            key={`next-${pendingSrc}`}
-            src={pendingSrc}
+            src={overlaySrc}
             alt=""
             className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-400 ${
-              nextLoaded ? "opacity-100" : "opacity-0"
+              overlayVisible ? "opacity-100" : "opacity-0"
             }`}
-            onLoad={() => setNextLoaded(true)}
-            onTransitionEnd={handleFadeEnd}
-            style={{ willChange: "opacity", pointerEvents: "none" }}
+            onTransitionEnd={handleOverlayTransitionEnd}
+            style={{ willChange: "opacity", transform: "translateZ(0)", pointerEvents: "none" }}
           />
         )}
 
@@ -243,7 +277,10 @@ function ArtworkCard({ artwork, onZoom }: { artwork: Artwork; onZoom: (src: stri
               {images.map((_, i) => (
                 <span
                   key={i}
-                  className={`h-1.5 w-1.5 rounded-full ${i === (nextIdx ?? currentIdx) ? "bg-white" : "bg-white/60"}`}
+                  className={`h-1.5 w-1.5 rounded-full ${
+                    // wenn Overlay aktiv ist, den Zielindex markieren, sonst current
+                    overlaySrc ? (images.indexOf(overlaySrc) === i ? "bg-white" : "bg-white/60") : (i === currentIdx ? "bg-white" : "bg-white/60")
+                  }`}
                 />
               ))}
             </div>
@@ -265,7 +302,6 @@ function ArtworkCard({ artwork, onZoom }: { artwork: Artwork; onZoom: (src: stri
 
         <div className="flex items-center justify-between">
           {artwork.available ? <span className="text-lg font-medium text-black">{priceFmt}</span> : <span aria-hidden className="inline-block" />}
-
           {artwork.available ? (
             <Button
               size="sm"
