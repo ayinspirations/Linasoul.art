@@ -249,12 +249,12 @@ export default function LinasoulPortfolio() {
     />
 
     {/* Headline */}
-    <h1 className="mb-6 text-3xl font-light text-gray-900">
+    <h1 className="mb-4 text-3xl font-light text-gray-900">
       Abstrakte Acrylbilder von Lina – moderne Kunst auf Leinwand
     </h1>
 
     {/* Einleitung */}
-    <p className="mx-auto mb-12 max-w-2xl text-lg leading-relaxed text-gray-700 drop-shadow-md">
+    <p className="mx-auto mb-8 max-w-2xl text-lg leading-relaxed text-gray-700 drop-shadow-md">
       Willkommen bei <strong>Linasoul Art</strong>. Ich bin Selina („Lina“) Sickinger und male{" "}
       <em>abstrakte Acrylgemälde</em>, die Emotionen sichtbar machen: ruhige Naturtöne, kraftvolle Strukturen
       und moderne Kompositionen für Zuhause oder Büro. Entdecke originale{" "}
