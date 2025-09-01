@@ -134,169 +134,164 @@ export default function LinasoulPortfolio() {
     )
   }
 
-  // ---------- Einzelkarte mit Crossfade ----------
-  function ArtworkCard({ artwork, onZoom }: { artwork: Artwork; onZoom: (src: string) => void }) {
-    const [currentIdx, setCurrentIdx] = useState(0)
-    const [nextIdx, setNextIdx] = useState<number | null>(null)
-    const [nextLoaded, setNextLoaded] = useState(false)
-    const { add } = useCart()
+  // ---------- Einzelkarte mit smooth Crossfade (ohne Flash, mobil-freundlich) ----------
+function ArtworkCard({ artwork, onZoom }: { artwork: Artwork; onZoom: (src: string) => void }) {
+  const [currentIdx, setCurrentIdx] = useState(0)
+  const [nextIdx, setNextIdx] = useState<number | null>(null)
+  const [nextLoaded, setNextLoaded] = useState(false)
+  const { add } = useCart()
 
-    const images = artwork.images || []
-    const total = images.length
-    const hasMultiple = total > 1
+  const images = artwork.images || []
+  const total = images.length
+  const hasMultiple = total > 1
 
-    const priceFmt = new Intl.NumberFormat("de-DE", {
-      style: "currency",
-      currency: (artwork.currency || "eur").toUpperCase(),
-    }).format((artwork.price_cents ?? 0) / 100)
+  // Preisformat
+  const priceFmt = new Intl.NumberFormat("de-DE", {
+    style: "currency",
+    currency: (artwork.currency || "eur").toUpperCase(),
+  }).format((artwork.price_cents ?? 0) / 100)
 
-    const go = (dir: "prev" | "next") => {
-      if (!total) return
-      const target =
-        dir === "next"
-          ? (currentIdx + 1) % total
-          : (currentIdx - 1 + total) % total
-      setNextIdx(target)
-      setNextLoaded(false)
-    }
+  // Nächsten Index bestimmen
+  const go = (dir: "prev" | "next") => {
+    if (!total) return
+    const target = dir === "next" ? (currentIdx + 1) % total : (currentIdx - 1 + total) % total
+    setNextIdx(target)
+    setNextLoaded(false)
+  }
 
-    useEffect(() => {
-  if (nextIdx === null || !nextLoaded) return
-  // kleines Delay, damit der Crossfade sichtbar bleibt
-  const t = setTimeout(() => {
+  // Preload Nachbarbilder (verbessert ersten Wechsel)
+  useEffect(() => {
+    if (!total) return
+    const ahead = new Image()
+    ahead.src = images[(currentIdx + 1) % total] || ""
+    const back = new Image()
+    back.src = images[(currentIdx - 1 + total) % total] || ""
+  }, [currentIdx, total, images])
+
+  // Wenn Fade-In abgeschlossen → Index offiziell wechseln
+  const handleFadeEnd = () => {
+    if (nextIdx === null || !nextLoaded) return
     setCurrentIdx(nextIdx)
     setNextIdx(null)
     setNextLoaded(false)
-  }, 300) // 300ms = Dauer der transition-opacity
-  return () => clearTimeout(t)
-}, [nextIdx, nextLoaded])
-
-    const currentSrc = images[currentIdx] || "/placeholder.svg"
-    const pendingSrc = nextIdx !== null ? images[nextIdx] : null
-
-    return (
-      <Card className="group overflow-hidden border-0 shadow-lg transition-all duration-300 hover:shadow-2xl">
-        <div className="relative aspect-[3/4] overflow-hidden bg-[#f7f5f1]">
-  {/* aktuelles Bild – bleibt sichtbar bis das neue fertig ist */}
-  <Image
-    key={`curr-${currentIdx}`}
-    src={currentSrc}
-    alt={`${artwork.title} – Acrylbild von Selina („Lina“) Sickinger`}
-    width={1200}
-    height={1600}
-    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-    className="absolute inset-0 h-full w-full object-cover cursor-zoom-in transition-transform duration-300 group-hover:scale-105"
-    onClick={() => onZoom(currentSrc)}
-    priority={false}
-  />
-
-  {/* nächstes Bild – wird im Hintergrund geladen und dann weich eingeblendet */}
-  {pendingSrc && (
-    <img
-      key={`next-${pendingSrc}`}
-      src={pendingSrc}
-      alt=""
-      className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-300 ${
-        nextLoaded ? "opacity-100" : "opacity-0"
-      }`}
-      onLoad={() => setNextLoaded(true)}
-      style={{ pointerEvents: "none" }}
-    />
-  )}
-
-  {/* Navigation */}
-  {hasMultiple && (
-    <>
-      <button
-        aria-label="Vorheriges Bild"
-        onClick={(e) => {
-          e.stopPropagation()
-          go("prev")
-        }}
-        className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-black/20"
-      >
-        <ChevronLeft className="h-5 w-5 text-gray-700" />
-      </button>
-      <button
-        aria-label="Nächstes Bild"
-        onClick={(e) => {
-          e.stopPropagation()
-          go("next")
-        }}
-        className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-black/20"
-      >
-        <ChevronRight className="h-5 w-5 text-gray-700" />
-      </button>
-
-      <div className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-        {images.map((_, i) => (
-          <span
-            key={i}
-            className={`h-1.5 w-1.5 rounded-full ${
-              i === (nextIdx ?? currentIdx) ? "bg-white" : "bg-white/60"
-            }`}
-          />
-        ))}
-      </div>
-    </>
-  )}
-</div>
-
-        <CardContent className="p-6">
-          <div className="mb-2 flex items-start justify-between">
-            <h3 className="text-xl font-medium text-gray-800">{artwork.title}</h3>
-            <Badge
-              variant={artwork.available ? "default" : "secondary"}
-              className="ml-2"
-            >
-              {artwork.available ? "Verfügbar" : "Nicht verfügbar"}
-            </Badge>
-          </div>
-
-          {artwork.size ? (
-            <p className="mb-1 text-sm text-gray-500">{artwork.size}</p>
-          ) : null}
-          {artwork.description ? (
-            <ArtworkDescription text={artwork.description} />
-          ) : null}
-
-          <div className="flex items-center justify-between">
-            {artwork.available ? (
-              <span className="text-lg font-medium text-black">
-                {priceFmt}
-              </span>
-            ) : (
-              <span aria-hidden className="inline-block" />
-            )}
-
-            {artwork.available ? (
-              <Button
-                size="sm"
-                className="bg-[#f9f5ec] text-gray-800 hover:bg-[#f2e8dc]"
-                onClick={() => {
-                  track("Add to Cart", {
-                    artwork_id: artwork.id,
-                    price_eur: (artwork.price_cents ?? 0) / 100,
-                  })
-                  add({
-                    id: artwork.id,
-                    title: artwork.title,
-                    price_cents: artwork.price_cents ?? 0,
-                    currency: artwork.currency || "eur",
-                    image: artwork.images?.[0] ?? null,
-                  })
-                }}
-              >
-                In den Warenkorb
-              </Button>
-            ) : (
-              <span className="text-sm text-gray-500">Nicht verfügbar</span>
-            )}
-          </div>
-        </CardContent>
-      </Card>
-    )
   }
+
+  const currentSrc = images[currentIdx] || "/placeholder.svg"
+  const pendingSrc = nextIdx !== null ? images[nextIdx] : null
+
+  return (
+    <Card className="group overflow-hidden border-0 shadow-lg transition-all duration-300 hover:shadow-2xl">
+      {/* Bildbühne */}
+      <div className="relative aspect-[3/4] overflow-hidden bg-[#f7f5f1]">
+        {/* Aktuelles Bild bleibt stehen bis der Fade wirklich fertig ist */}
+        <img
+          key={`curr-${currentIdx}`}
+          src={currentSrc}
+          alt={`${artwork.title} – Acrylbild von Selina („Lina“) Sickinger`}
+          className="absolute inset-0 h-full w-full object-cover cursor-zoom-in transition-transform duration-300 group-hover:scale-105"
+          onClick={() => onZoom(currentSrc)}
+          decoding="sync"
+          loading="eager"
+          style={{ willChange: "transform" }}
+        />
+
+        {/* Neues Bild: unsichtbar laden, dann weich einblenden */}
+        {pendingSrc && (
+          <img
+            key={`next-${pendingSrc}`}
+            src={pendingSrc}
+            alt=""
+            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-400 ${nextLoaded ? "opacity-100" : "opacity-0"}`}
+            onLoad={() => setNextLoaded(true)}
+            onTransitionEnd={handleFadeEnd}
+            style={{ willChange: "opacity", pointerEvents: "none" }}
+          />
+        )}
+
+        {/* Navigation */}
+        {hasMultiple && (
+          <>
+            <button
+              aria-label="Vorheriges Bild"
+              onClick={(e) => {
+                e.stopPropagation()
+                go("prev")
+              }}
+              className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-black/20"
+            >
+              <ChevronLeft className="h-5 w-5 text-gray-700" />
+            </button>
+            <button
+              aria-label="Nächstes Bild"
+              onClick={(e) => {
+                e.stopPropagation()
+                go("next")
+              }}
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-black/20"
+            >
+              <ChevronRight className="h-5 w-5 text-gray-700" />
+            </button>
+
+            {/* Dots */}
+            <div className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+              {images.map((_, i) => (
+                <span
+                  key={i}
+                  className={`h-1.5 w-1.5 rounded-full ${i === (nextIdx ?? currentIdx) ? "bg-white" : "bg-white/60"}`}
+                />
+              ))}
+            </div>
+          </>
+        )}
+      </div>
+
+      {/* Card Content */}
+      <CardContent className="p-6">
+        <div className="mb-2 flex items-start justify-between">
+          <h3 className="text-xl font-medium text-gray-800">{artwork.title}</h3>
+          <Badge variant={artwork.available ? "default" : "secondary"} className="ml-2">
+            {artwork.available ? "Verfügbar" : "Nicht verfügbar"}
+          </Badge>
+        </div>
+
+        {artwork.size ? <p className="mb-1 text-sm text-gray-500">{artwork.size}</p> : null}
+        {artwork.description ? <ArtworkDescription text={artwork.description} /> : null}
+
+        <div className="flex items-center justify-between">
+          {artwork.available ? (
+            <span className="text-lg font-medium text-black">{priceFmt}</span>
+          ) : (
+            <span aria-hidden className="inline-block" />
+          )}
+
+          {artwork.available ? (
+            <Button
+              size="sm"
+              className="bg-[#f9f5ec] text-gray-800 hover:bg-[#f2e8dc]"
+              onClick={() => {
+                track("Add to Cart", {
+                  artwork_id: artwork.id,
+                  price_eur: (artwork.price_cents ?? 0) / 100,
+                })
+                add({
+                  id: artwork.id,
+                  title: artwork.title,
+                  price_cents: artwork.price_cents ?? 0,
+                  currency: artwork.currency || "eur",
+                  image: images[0] ?? null,
+                })
+              }}
+            >
+              In den Warenkorb
+            </Button>
+          ) : (
+            <span className="text-sm text-gray-500">Nicht verfügbar</span>
+          )}
+        </div>
+      </CardContent>
+    </Card>
+  )
+}
 
   // ---------- Seite ----------
   return (
