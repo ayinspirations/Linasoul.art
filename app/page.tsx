@@ -2,16 +2,13 @@
 
 import { useEffect, useState } from "react"
 import Image from "next/image"
-import Link from "next/link"
-import { Heart, Palette, ChevronLeft, ChevronRight, X, ShoppingCart } from "lucide-react"
+import { Heart, Palette, ChevronLeft, ChevronRight, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { Badge } from "@/components/ui/badge"
 import { track } from "@vercel/analytics"
-
-// Cart
 import { useCart } from "./cart/CartProvider"
 
 // ---------- Types ----------
@@ -26,30 +23,7 @@ type Artwork = {
   size?: string
 }
 
-// ---------- Cart Button (Navbar) ----------
-function CartButton() {
-  const { count } = useCart()
-  return (
-    <Link
-      href="/cart"
-      className="relative inline-flex items-center justify-center p-2 text-gray-800 transition-colors hover:text-taupe-700"
-      aria-label="Warenkorb"
-    >
-      <ShoppingCart className="h-6 w-6" />
-      {count > 0 && (
-        <span className="absolute -top-1 -right-1 flex h-5 min-w-[1.25rem] items-center justify-center rounded-full bg-black px-1 text-xs text-white">
-          {count}
-        </span>
-      )}
-    </Link>
-  )
-}
-
 export default function LinasoulPortfolio() {
-  // Forms
-  const [contactForm] = useState({ name: "", email: "", message: "" })
-  const [inquiryForm] = useState({ name: "", email: "", artwork: "", message: "" })
-
   // Zoom-Lightbox
   const [zoomSrc, setZoomSrc] = useState<string | null>(null)
   const [zoomLevel, setZoomLevel] = useState(1)
@@ -248,11 +222,6 @@ export default function LinasoulPortfolio() {
   // ---------- Seite ----------
   return (
     <div className="min-h-screen bg-gradient-to-br from-taupe-50 via-white to-blue-50">
-      {/* Hinweis: Navbar & Footer kommen aus dem globalen Layout. Für den Warenkorb-Status zeigen wir hier optional den Button. */}
-      <div className="fixed right-4 top-20 z-40 hidden md:block">
-        <CartButton />
-      </div>
-
       {/* Hero */}
       <section id="home" className="relative flex min-h-[70vh] items-center justify-center overflow-hidden">
         <div className="absolute inset-0">
@@ -264,7 +233,6 @@ export default function LinasoulPortfolio() {
         </div>
 
         <div className="relative z-10 mx-auto max-w-4xl px-4 text-center">
-          <Image src="/images/Logo.png" alt="Linasoul Logo" width={400} height={150} priority className="mx-auto block" />
           <h1 className="mt-6 mb-4 text-3xl font-light text-gray-900">
             Abstrakte Acrylbilder von Lina – moderne Kunst auf Leinwand
           </h1>
@@ -286,7 +254,44 @@ export default function LinasoulPortfolio() {
         </div>
       </section>
 
-      {/* About */}
+      {/* Galerie (direkt nach Hero) */}
+      <section id="gallery" className="bg-gradient-to-br from-taupe-50 to-taupe-100 py-20">
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+          <div className="mb-16 text-center">
+            <h2 className="mb-4 text-4xl font-light text-gray-800">Galerie</h2>
+            <div className="mx-auto max-w-3xl space-y-4 text-lg leading-relaxed text-gray-600">
+              <p>
+                Jedes meiner <strong>Acrylbilder auf Leinwand</strong> ist Ausdruck von Gefühl, Energie und Intuition. In
+                einem meditativen Prozess entstehen Formen und Strukturen, die Räume mit Ruhe und Tiefe füllen.
+              </p>
+              <p>
+                Viele Kund:innen erzählen, dass sie „ihr Bild“ gefunden haben – ein Werk, das sie besonders berührt. Genau
+                das ist meine Intention: <em>Kunstwerke zu schaffen, die inspirieren, berühren und ein Leben lang
+                begleiten.</em>
+              </p>
+              <p>
+                In dieser Galerie findest du eine Auswahl handgemalter <strong>Acrylgemälde</strong>, die du direkt online
+                kaufen kannst.
+              </p>
+            </div>
+          </div>
+
+          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
+            {artworks.map((artwork) => (
+              <ArtworkCard
+                key={artwork.id}
+                artwork={artwork}
+                onZoom={(src) => {
+                  setZoomSrc(src)
+                  setZoomLevel(1)
+                }}
+              />
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* Über die Künstlerin */}
       <section id="about" className="bg-white py-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-12 md:grid-cols-2">
@@ -320,45 +325,7 @@ export default function LinasoulPortfolio() {
         </div>
       </section>
 
-      {/* Gallery */}
-      <section id="gallery" className="bg-gradient-to-br from-taupe-50 to-taupe-100 py-20">
-        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-16 text-center">
-            <h2 className="mb-4 text-4xl font-light text-gray-800">Galerie</h2>
-            {/* SEO-optimierte Einleitung */}
-            <div className="mx-auto max-w-3xl space-y-4 text-lg leading-relaxed text-gray-600">
-              <p>
-                Jedes meiner <strong>Acrylbilder auf Leinwand</strong> ist Ausdruck von Gefühl, Energie und Intuition. In
-                einem meditativen Prozess entstehen Formen und Strukturen, die Räume mit Ruhe und Tiefe füllen.
-              </p>
-              <p>
-                Viele Kund:innen erzählen, dass sie „ihr Bild“ gefunden haben – ein Werk, das sie besonders berührt. Genau
-                das ist meine Intention: <em>Kunstwerke zu schaffen, die inspirieren, berühren und ein Leben lang
-                begleiten.</em>
-              </p>
-              <p>
-                In dieser Galerie findest du eine Auswahl handgemalter <strong>Acrylgemälde</strong>, die du direkt online
-                kaufen kannst.
-              </p>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {artworks.map((artwork) => (
-              <ArtworkCard
-                key={artwork.id}
-                artwork={artwork}
-                onZoom={(src) => {
-                  setZoomSrc(src)
-                  setZoomLevel(1)
-                }}
-              />
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Contact */}
+      {/* Kontakt */}
       <section id="contact" className="bg-gradient-to-br from-taupe-50 to-blue-50 py-20">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
@@ -367,7 +334,6 @@ export default function LinasoulPortfolio() {
               Hat eines meiner Werke dein Herz berührt? Ich freue mich auf deine Anfrage!
             </p>
 
-            {/* Formular mit mailto */}
             <Card className="mx-auto max-w-md border-0 shadow-lg">
               <CardContent className="p-8">
                 <form action="mailto:linasoul.art@gmx.de" method="POST" encType="text/plain" className="space-y-6">
