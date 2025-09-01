@@ -40,6 +40,21 @@ export default function LinasoulPortfolio() {
     return () => window.removeEventListener("keydown", onKey)
   }, [])
 
+  // Body-Scroll sperren, wenn Zoom offen ist
+  useEffect(() => {
+    const body = document.body
+    if (zoomSrc) {
+      const prevOverflow = body.style.overflow
+      const prevTouch = body.style.touchAction
+      body.style.overflow = "hidden"
+      body.style.touchAction = "none" // verhindert iOS Overscroll
+      return () => {
+        body.style.overflow = prevOverflow
+        body.style.touchAction = prevTouch
+      }
+    }
+  }, [zoomSrc])
+
   // Analytics: Page View
   useEffect(() => {
     track("Homepage Viewed")
@@ -75,7 +90,12 @@ export default function LinasoulPortfolio() {
           imgs = (imgs || []).filter((u) => typeof u === "string" && u.trim().length > 0)
 
           return {
-            id: String(a.id ?? (typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : Date.now().toString())),
+            id: String(
+              a.id ??
+                (typeof crypto !== "undefined" && "randomUUID" in crypto
+                  ? crypto.randomUUID()
+                  : Date.now().toString())
+            ),
             title: String(a.title ?? "Untitled"),
             description: a.description ?? "",
             price_cents: Number(a.price_cents ?? 0),
@@ -114,41 +134,84 @@ export default function LinasoulPortfolio() {
     )
   }
 
-  // ---------- Einzelkarte ----------
+  // ---------- Einzelkarte mit Crossfade ----------
   function ArtworkCard({ artwork, onZoom }: { artwork: Artwork; onZoom: (src: string) => void }) {
-    const [idx, setIdx] = useState(0)
-    const hasMultiple = (artwork.images?.length ?? 0) > 1
+    const [currentIdx, setCurrentIdx] = useState(0)
+    const [nextIdx, setNextIdx] = useState<number | null>(null)
+    const [nextLoaded, setNextLoaded] = useState(false)
     const { add } = useCart()
 
-    const prevImage = () => setIdx((p) => (p === 0 ? (artwork.images?.length ?? 1) - 1 : p - 1))
-    const nextImage = () => setIdx((p) => (p === (artwork.images?.length ?? 1) - 1 ? 0 : p + 1))
+    const images = artwork.images || []
+    const total = images.length
+    const hasMultiple = total > 1
 
     const priceFmt = new Intl.NumberFormat("de-DE", {
       style: "currency",
       currency: (artwork.currency || "eur").toUpperCase(),
     }).format((artwork.price_cents ?? 0) / 100)
 
+    const go = (dir: "prev" | "next") => {
+      if (!total) return
+      const target =
+        dir === "next"
+          ? (currentIdx + 1) % total
+          : (currentIdx - 1 + total) % total
+      setNextIdx(target)
+      setNextLoaded(false)
+    }
+
+    useEffect(() => {
+      if (nextIdx === null || !nextLoaded) return
+      const t = setTimeout(() => {
+        setCurrentIdx(nextIdx)
+        setNextIdx(null)
+        setNextLoaded(false)
+      }, 150) // 150–250ms ist angenehm
+      return () => clearTimeout(t)
+    }, [nextIdx, nextLoaded])
+
+    const currentSrc = images[currentIdx] || "/placeholder.svg"
+    const pendingSrc = nextIdx !== null ? images[nextIdx] : null
+
     return (
       <Card className="group overflow-hidden border-0 shadow-lg transition-all duration-300 hover:shadow-2xl">
-        <div className="relative aspect-[3/4] overflow-hidden">
+        <div className="relative aspect-[3/4] overflow-hidden bg-[#f7f5f1]">
+          {/* aktuelles Bild */}
           <Image
-            src={artwork.images && artwork.images[idx] ? artwork.images[idx] : "/placeholder.svg"}
+            key={`curr-${currentSrc}`}
+            src={currentSrc}
             alt={`${artwork.title} – Abstraktes Acrylbild auf Leinwand von Selina („Lina“) Sickinger`}
             width={1200}
             height={1600}
             sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className="h-full w-full cursor-zoom-in object-cover transition-transform duration-300 group-hover:scale-105"
-            onClick={() => artwork.images && artwork.images[idx] && onZoom(artwork.images[idx])}
+            className={`absolute inset-0 h-full w-full cursor-zoom-in object-cover transition-transform duration-300 group-hover:scale-105 transition-opacity duration-200 ${
+              nextIdx !== null ? "opacity-0" : "opacity-100"
+            }`}
+            onClick={() => onZoom(currentSrc)}
           />
+          {/* nächstes Bild (Crossfade Overlay) */}
+          {pendingSrc && (
+            <Image
+              key={`next-${pendingSrc}`}
+              src={pendingSrc}
+              alt=""
+              width={1200}
+              height={1600}
+              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+              className="absolute inset-0 h-full w-full object-cover opacity-100 transition-opacity duration-200"
+              onLoad={() => setNextLoaded(true)}
+            />
+          )}
+
           {hasMultiple && (
             <>
               <button
                 aria-label="Vorheriges Bild"
                 onClick={(e) => {
                   e.stopPropagation()
-                  prevImage()
+                  go("prev")
                 }}
-                className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow hover:bg-white"
+                className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-black/20"
               >
                 <ChevronLeft className="h-5 w-5 text-gray-700" />
               </button>
@@ -156,16 +219,21 @@ export default function LinasoulPortfolio() {
                 aria-label="Nächstes Bild"
                 onClick={(e) => {
                   e.stopPropagation()
-                  nextImage()
+                  go("next")
                 }}
-                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow hover:bg-white"
+                className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-black/20"
               >
                 <ChevronRight className="h-5 w-5 text-gray-700" />
               </button>
 
-              <div className="absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-                {(artwork.images || []).map((_, i) => (
-                  <span key={i} className={`h-1.5 w-1.5 rounded-full ${i === idx ? "bg-white" : "bg-white/60"}`} />
+              <div className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
+                {images.map((_, i) => (
+                  <span
+                    key={i}
+                    className={`h-1.5 w-1.5 rounded-full ${
+                      i === (nextIdx ?? currentIdx) ? "bg-white" : "bg-white/60"
+                    }`}
+                  />
                 ))}
               </div>
             </>
@@ -175,17 +243,26 @@ export default function LinasoulPortfolio() {
         <CardContent className="p-6">
           <div className="mb-2 flex items-start justify-between">
             <h3 className="text-xl font-medium text-gray-800">{artwork.title}</h3>
-            <Badge variant={artwork.available ? "default" : "secondary"} className="ml-2">
+            <Badge
+              variant={artwork.available ? "default" : "secondary"}
+              className="ml-2"
+            >
               {artwork.available ? "Verfügbar" : "Nicht verfügbar"}
             </Badge>
           </div>
 
-          {artwork.size ? <p className="mb-1 text-sm text-gray-500">{artwork.size}</p> : null}
-          {artwork.description ? <ArtworkDescription text={artwork.description} /> : null}
+          {artwork.size ? (
+            <p className="mb-1 text-sm text-gray-500">{artwork.size}</p>
+          ) : null}
+          {artwork.description ? (
+            <ArtworkDescription text={artwork.description} />
+          ) : null}
 
           <div className="flex items-center justify-between">
             {artwork.available ? (
-              <span className="text-lg font-medium text-black">{priceFmt}</span>
+              <span className="text-lg font-medium text-black">
+                {priceFmt}
+              </span>
             ) : (
               <span aria-hidden className="inline-block" />
             )}
@@ -222,59 +299,62 @@ export default function LinasoulPortfolio() {
   // ---------- Seite ----------
   return (
     <div className="min-h-screen bg-gradient-to-br from-taupe-50 via-white to-blue-50">
-     {/* Hero */}
-<section
-  id="home"
-  className="relative flex min-h-[80vh] flex-col items-center justify-center overflow-hidden text-center"
->
-  {/* Hintergrundbild + Overlay */}
-  <div className="absolute inset-0">
-    <div
-      className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-60"
-      style={{ backgroundImage: "url('/images/abstract-background.jpeg')" }}
-    />
-    <div className="absolute inset-0 bg-white/20" />
-  </div>
+      {/* Hero */}
+      <section
+        id="home"
+        className="relative flex min-h-[80vh] flex-col items-center justify-center overflow-hidden text-center"
+      >
+        {/* Hintergrundbild + Overlay */}
+        <div className="absolute inset-0">
+          <div
+            className="absolute inset-0 bg-cover bg-center bg-no-repeat opacity-60"
+            style={{ backgroundImage: "url('/images/abstract-background.jpeg')" }}
+          />
+          <div className="absolute inset-0 bg-white/20" />
+        </div>
 
-  {/* Inhalt */}
-  <div className="relative z-10 mx-auto w-full max-w-4xl px-4">
-    {/* Logo zentral – mobil kompakt, Desktop größer; sehr kleiner Abstand darunter */}
-    <Image
-      src="/images/Logo.png"
-      alt="Linasoul Logo"
-      width={420}
-      height={180}
-      priority
-      className="mx-auto block h-auto w-48 sm:w-64 md:w-80 lg:w-[22rem] mb-1 sm:mb-2"
-    />
+        {/* Inhalt */}
+        <div className="relative z-10 mx-auto w-full max-w-4xl px-4">
+          {/* Logo zentral – mobil kompakt, Desktop größer; sehr kleiner Abstand darunter */}
+          <Image
+            src="/images/Logo.png"
+            alt="Linasoul Logo"
+            width={420}
+            height={180}
+            priority
+            className="mx-auto block h-auto w-48 sm:w-64 md:w-80 lg:w-[22rem] mb-1 sm:mb-2"
+          />
 
-    {/* Headline – mobil 2xl/3xl, Desktop 4xl; enger zum Logo */}
-    <h1 className="mb-2 sm:mb-3 text-2xl sm:text-3xl md:text-4xl font-light text-gray-900">
-      Abstrakte Acrylbilder von Lina – moderne Kunst auf Leinwand
-    </h1>
+          {/* Headline – mobil 2xl/3xl, Desktop 4xl; enger zum Logo */}
+          <h1 className="mb-2 sm:mb-3 text-2xl sm:text-3xl md:text-4xl font-light text-gray-900">
+            Abstrakte Acrylbilder von Lina – moderne Kunst auf Leinwand
+          </h1>
 
-    {/* Einleitung – mobil etwas kleiner, Desktop größer; moderater Abstand vor CTA */}
-    <p className="mx-auto mb-6 sm:mb-8 max-w-2xl text-base sm:text-lg leading-relaxed text-gray-700 drop-shadow-md">
-      Willkommen bei <strong>Linasoul Art</strong>. Ich bin Selina („Lina“) Sickinger und male{" "}
-      <em>abstrakte Acrylgemälde</em>, die Emotionen sichtbar machen: ruhige Naturtöne, kraftvolle
-      Strukturen und moderne Kompositionen für Zuhause oder Büro. Entdecke originale{" "}
-      <strong>abstrakte Bilder</strong> auf Leinwand – jedes Werk ist handgemalt und ein Unikat.
-    </p>
+          {/* Einleitung – mobil etwas kleiner, Desktop größer; moderater Abstand vor CTA */}
+          <p className="mx-auto mb-6 sm:mb-8 max-w-2xl text-base sm:text-lg leading-relaxed text-gray-700 drop-shadow-md">
+            Willkommen bei <strong>Linasoul Art</strong>. Ich bin Selina („Lina“) Sickinger und male{" "}
+            <em>abstrakte Acrylgemälde</em>, die Emotionen sichtbar machen: ruhige Naturtöne, kraftvolle
+            Strukturen und moderne Kompositionen für Zuhause oder Büro. Entdecke originale{" "}
+            <strong>abstrakte Bilder</strong> auf Leinwand – jedes Werk ist handgemalt und ein Unikat.
+          </p>
 
-    {/* CTA */}
-    <Button
-      size="lg"
-      className="rounded-full bg-[#f9f5ec] px-8 py-3 text-gray-800 shadow-lg hover:bg-[#f2e8dc]"
-      onClick={() => {
-        // optionales Analytics-Event, falls @vercel/analytics eingebunden ist
-        try { /* @ts-ignore */ track?.("CTA To Gallery") } catch {}
-        document.getElementById("gallery")?.scrollIntoView({ behavior: "smooth" })
-      }}
-    >
-      Zur Galerie
-    </Button>
-  </div>
-</section>
+          {/* CTA */}
+          <Button
+            size="lg"
+            className="rounded-full bg-[#f9f5ec] px-8 py-3 text-gray-800 shadow-lg hover:bg-[#f2e8dc]"
+            onClick={() => {
+              try {
+                // optionales Analytics-Event, falls @vercel/analytics eingebunden ist
+                // @ts-ignore
+                track?.("CTA To Gallery")
+              } catch {}
+              document.getElementById("gallery")?.scrollIntoView({ behavior: "smooth" })
+            }}
+          >
+            Zur Galerie
+          </Button>
+        </div>
+      </section>
 
       {/* Galerie (direkt nach Hero) */}
       <section id="gallery" className="bg-gradient-to-br from-taupe-50 to-taupe-100 py-20">
@@ -337,7 +417,7 @@ export default function LinasoulPortfolio() {
             </div>
             <div className="relative">
               <div className="aspect-square overflow-hidden rounded-2xl shadow-2xl">
-                <Image src="/images/AboutMe1.jpeg" alt="Lina im Atelier" width={500} height={500} className="object-cover" />
+                <Image src="/images/AboutMe1.jpeg" alt="Lina im Atelier" width={1200} height={1200} className="object-cover" />
               </div>
               <div className="absolute -bottom-6 -right-6 flex h-24 w-24 items-center justify-center rounded-full bg-taupe-100">
                 <Palette className="h-8 w-8 text-taupe-400" />
@@ -388,7 +468,7 @@ export default function LinasoulPortfolio() {
       {/* Zoom Lightbox */}
       {zoomSrc && (
         <div
-          className="fixed inset-0 z-[9990] flex items-center justify-center bg-black/80 p-4"
+          className="fixed inset-0 z-[9990] flex items-center justify-center bg-black/80 p-4 overscroll-contain"
           onClick={() => {
             setZoomSrc(null)
             setZoomLevel(1)
@@ -406,7 +486,7 @@ export default function LinasoulPortfolio() {
             <X className="h-5 w-5 text-gray-800" />
           </button>
 
-          <div className="relative z-[9995] max-h-full max-w-6xl overflow-auto">
+          <div className="relative z-[9995] max-h-screen max-w-6xl overflow-auto">
             <img
               src={zoomSrc!}
               alt="Zoomed artwork"
