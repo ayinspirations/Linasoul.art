@@ -1,8 +1,10 @@
-// app/robots.ts
-export default function robots() {
+import type { MetadataRoute } from "next"
+
+export default function robots(): MetadataRoute.Robots {
+  const host = "https://linasoul.art" // <- DEIN KANONISCHER HOST
   return {
     rules: { userAgent: "*", allow: "/" },
-    sitemap: "https://linasoul.art/sitemap.xml",
-    host: "https://linasoul.art",
+    sitemap: `${host}/sitemap.xml`,
+    host,
   }
 }
