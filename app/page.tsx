@@ -135,13 +135,15 @@ export default function LinasoulPortfolio() {
   }
 
   // ---------- Einzelkarte mit smooth Crossfade (ohne Flash, mobil-freundlich) ----------
+// ---------- Einzelkarte mit smooth Crossfade (ohne Flash, mobil-freundlich) ----------
 function ArtworkCard({ artwork, onZoom }: { artwork: Artwork; onZoom: (src: string) => void }) {
   const [currentIdx, setCurrentIdx] = useState(0)
   const [nextIdx, setNextIdx] = useState<number | null>(null)
   const [nextLoaded, setNextLoaded] = useState(false)
   const { add } = useCart()
 
-  const images = artwork.images || []
+  // Bilder sicher normalisieren
+  const images = (artwork.images || []).filter((u) => typeof u === "string" && u.trim().length > 0)
   const total = images.length
   const hasMultiple = total > 1
 
@@ -151,29 +153,31 @@ function ArtworkCard({ artwork, onZoom }: { artwork: Artwork; onZoom: (src: stri
     currency: (artwork.currency || "eur").toUpperCase(),
   }).format((artwork.price_cents ?? 0) / 100)
 
-  // Nächsten Index bestimmen
+  // Navigation: Zielindex vorbereiten (wir blenden erst ein, dann offiziell umschalten)
   const go = (dir: "prev" | "next") => {
-    if (!total) return
+    if (!total || total < 2) return
     const target = dir === "next" ? (currentIdx + 1) % total : (currentIdx - 1 + total) % total
     setNextIdx(target)
     setNextLoaded(false)
   }
 
-  // Preload Nachbarbilder (verbessert ersten Wechsel)
+  // Nachbarbilder proaktiv vorladen (explizit window.Image, um Import-Konflikte zu vermeiden)
   useEffect(() => {
-    if (!total) return
-    const ahead = new Image()
+    if (!total || total < 2) return
+    const ahead = new window.Image()
     ahead.src = images[(currentIdx + 1) % total] || ""
-    const back = new Image()
+    const back = new window.Image()
     back.src = images[(currentIdx - 1 + total) % total] || ""
   }, [currentIdx, total, images])
 
-  // Wenn Fade-In abgeschlossen → Index offiziell wechseln
-  const handleFadeEnd = () => {
-    if (nextIdx === null || !nextLoaded) return
-    setCurrentIdx(nextIdx)
-    setNextIdx(null)
-    setNextLoaded(false)
+  // Wenn die Überblendung fertig ist → Index umschalten (ohne Timeout-Jitter)
+  const handleFadeEnd: React.TransitionEventHandler<HTMLImageElement> = (e) => {
+    if (e.propertyName !== "opacity") return
+    if (nextIdx !== null && nextLoaded) {
+      setCurrentIdx(nextIdx)
+      setNextIdx(null)
+      setNextLoaded(false)
+    }
   }
 
   const currentSrc = images[currentIdx] || "/placeholder.svg"
@@ -183,7 +187,7 @@ function ArtworkCard({ artwork, onZoom }: { artwork: Artwork; onZoom: (src: stri
     <Card className="group overflow-hidden border-0 shadow-lg transition-all duration-300 hover:shadow-2xl">
       {/* Bildbühne */}
       <div className="relative aspect-[3/4] overflow-hidden bg-[#f7f5f1]">
-        {/* Aktuelles Bild bleibt stehen bis der Fade wirklich fertig ist */}
+        {/* Aktuelles Bild bleibt sichtbar, bis das neue vollständig eingeblendet ist */}
         <img
           key={`curr-${currentIdx}`}
           src={currentSrc}
@@ -195,13 +199,15 @@ function ArtworkCard({ artwork, onZoom }: { artwork: Artwork; onZoom: (src: stri
           style={{ willChange: "transform" }}
         />
 
-        {/* Neues Bild: unsichtbar laden, dann weich einblenden */}
+        {/* Neues Bild: unsichtbar laden, dann weich einblenden; erst danach Index wechseln */}
         {pendingSrc && (
           <img
             key={`next-${pendingSrc}`}
             src={pendingSrc}
             alt=""
-            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-400 ${nextLoaded ? "opacity-100" : "opacity-0"}`}
+            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-400 ${
+              nextLoaded ? "opacity-100" : "opacity-0"
+            }`}
             onLoad={() => setNextLoaded(true)}
             onTransitionEnd={handleFadeEnd}
             style={{ willChange: "opacity", pointerEvents: "none" }}
@@ -245,7 +251,7 @@ function ArtworkCard({ artwork, onZoom }: { artwork: Artwork; onZoom: (src: stri
         )}
       </div>
 
-      {/* Card Content */}
+      {/* Text + Preis + Button */}
       <CardContent className="p-6">
         <div className="mb-2 flex items-start justify-between">
           <h3 className="text-xl font-medium text-gray-800">{artwork.title}</h3>
@@ -258,11 +264,7 @@ function ArtworkCard({ artwork, onZoom }: { artwork: Artwork; onZoom: (src: stri
         {artwork.description ? <ArtworkDescription text={artwork.description} /> : null}
 
         <div className="flex items-center justify-between">
-          {artwork.available ? (
-            <span className="text-lg font-medium text-black">{priceFmt}</span>
-          ) : (
-            <span aria-hidden className="inline-block" />
-          )}
+          {artwork.available ? <span className="text-lg font-medium text-black">{priceFmt}</span> : <span aria-hidden className="inline-block" />}
 
           {artwork.available ? (
             <Button
