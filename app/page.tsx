@@ -137,10 +137,10 @@ export default function LinasoulPortfolio() {
   // ---------- Einzelkarte mit smooth Crossfade (ohne Flash, mobil-freundlich) ----------
 // ---------- Einzelkarte mit smooth Crossfade (ohne Flash, mobil-freundlich) ----------
 // ---------- Einzelkarte mit decode-Preload (kein Flash, mobil-sicher) ----------
+// ---------- Einzelkarte mit sofortigem Wechsel + Crossfade ----------
 function ArtworkCard({ artwork, onZoom }: { artwork: Artwork; onZoom: (src: string) => void }) {
   const [currentIdx, setCurrentIdx] = useState(0)
-  const [overlaySrc, setOverlaySrc] = useState<string | null>(null) // URL des kommenden Bildes
-  const [overlayVisible, setOverlayVisible] = useState(false)        // steuert Fade-In
+  const [overlaySrc, setOverlaySrc] = useState<string | null>(null)
   const { add } = useCart()
 
   const images = (artwork.images || []).filter((u) => typeof u === "string" && u.trim().length > 0)
@@ -154,97 +154,43 @@ function ArtworkCard({ artwork, onZoom }: { artwork: Artwork; onZoom: (src: stri
 
   const currentSrc = images[currentIdx] || "/placeholder.svg"
 
-  // Nächstes Bild vorbereiten: laden + DECODEN, dann erst anzeigen
-  async function prepareAndFadeTo(targetIdx: number) {
-    if (!total) return
-    const targetSrc = images[targetIdx]
-    if (!targetSrc) return
-
-    try {
-      const img = new window.Image()
-      img.crossOrigin = "anonymous" // harmless; hilft bei einigen CDNs gegen decode-hiccups
-      img.decoding = "async"
-      img.loading = "eager"         // lädt direkt (wir blenden erst nach decode ein)
-      img.src = targetSrc
-
-      // Warten bis komplett DEKODIERT (nicht nur geladen)
-      if (img.decode) {
-        await img.decode()
-      } else {
-        // Fallback für sehr alte Browser
-        await new Promise<void>((resolve) => {
-          if (img.complete) return resolve()
-          img.onload = () => resolve()
-          img.onerror = () => resolve()
-        })
-      }
-
-      // Overlay befüllen und einblenden
-      setOverlaySrc(targetSrc)
-      // ein Tick, damit CSS-Transition greift
-      requestAnimationFrame(() => setOverlayVisible(true))
-    } catch {
-      // Wenn Dekodieren fehlschlägt: hart umschalten ohne Fade (immer noch ohne Weiß, da current bleibt)
-      setCurrentIdx(targetIdx)
-      setOverlaySrc(null)
-      setOverlayVisible(false)
-    }
-  }
-
+  // Navigation: sofort Overlay setzen, danach Index umstellen
   const go = (dir: "prev" | "next") => {
     if (!hasMultiple) return
     const target =
-      dir === "next" ? (currentIdx + 1) % total : (currentIdx - 1 + total) % total
-    // starte decode-Preload + späteres Fade
-    prepareAndFadeTo(target)
-  }
+      dir === "next"
+        ? (currentIdx + 1) % total
+        : (currentIdx - 1 + total) % total
 
-  // Nach dem sichtbaren Fade den Index offiziell umstellen und Overlay entfernen
-  const handleOverlayTransitionEnd: React.TransitionEventHandler<HTMLImageElement> = (e) => {
-    if (e.propertyName !== "opacity") return
-    if (overlaySrc) {
-      const targetIdx = images.indexOf(overlaySrc)
-      if (targetIdx !== -1) setCurrentIdx(targetIdx)
-    }
-    // Overlay wieder abbauen
-    setOverlayVisible(false)
-    setOverlaySrc(null)
-  }
+    const targetSrc = images[target]
+    if (!targetSrc) return
 
-  // Preload der Nachbarbilder (nur Quellen setzen; decode bei Bedarf oben)
-  useEffect(() => {
-    if (!hasMultiple) return
-    const ahead = new window.Image()
-    ahead.src = images[(currentIdx + 1) % total] || ""
-    const back = new window.Image()
-    back.src = images[(currentIdx - 1 + total) % total] || ""
-  }, [currentIdx, hasMultiple, images, total])
+    setOverlaySrc(targetSrc)
+    // nach dem Fade-In das aktuelle Bild setzen
+    setTimeout(() => {
+      setCurrentIdx(target)
+      setOverlaySrc(null)
+    }, 300) // Dauer der CSS-Transition
+  }
 
   return (
     <Card className="group overflow-hidden border-0 shadow-lg transition-all duration-300 hover:shadow-2xl">
-      {/* Bildbühne */}
       <div className="relative aspect-[3/4] overflow-hidden bg-[#f7f5f1]">
-        {/* Aktuelles Bild: bleibt stehen, bis Overlay fertig ist */}
+        {/* aktuelles Bild */}
         <img
           src={currentSrc}
           alt={`${artwork.title} – Acrylbild von Selina („Lina“) Sickinger`}
           className="absolute inset-0 h-full w-full object-cover cursor-zoom-in transition-transform duration-300 group-hover:scale-105"
           onClick={() => onZoom(currentSrc)}
-          decoding="sync"
-          loading="eager"
-          style={{ willChange: "transform", transform: "translateZ(0)" }}
         />
 
-        {/* Overlay-Bild: wird erst nach vollständigem DECODE eingeblendet */}
+        {/* Overlay-Bild für Crossfade */}
         {overlaySrc && (
           <img
             src={overlaySrc}
             alt=""
-            className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-400 ${
-              overlayVisible ? "opacity-100" : "opacity-0"
-            }`}
-            onTransitionEnd={handleOverlayTransitionEnd}
-            style={{ willChange: "opacity", transform: "translateZ(0)", pointerEvents: "none" }}
+            className="absolute inset-0 h-full w-full object-cover opacity-0 animate-fadeIn"
+            onClick={() => onZoom(overlaySrc)}
           />
         )}
 
@@ -257,7 +203,7 @@ function ArtworkCard({ artwork, onZoom }: { artwork: Artwork; onZoom: (src: stri
                 e.stopPropagation()
                 go("prev")
               }}
-              className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-black/20"
+              className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow hover:bg-white"
             >
               <ChevronLeft className="h-5 w-5 text-gray-700" />
             </button>
@@ -267,32 +213,22 @@ function ArtworkCard({ artwork, onZoom }: { artwork: Artwork; onZoom: (src: stri
                 e.stopPropagation()
                 go("next")
               }}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow hover:bg-white focus:outline-none focus:ring-2 focus:ring-black/20"
+              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow hover:bg-white"
             >
               <ChevronRight className="h-5 w-5 text-gray-700" />
             </button>
-
-            {/* Dots */}
-            <div className="pointer-events-none absolute bottom-3 left-1/2 -translate-x-1/2 flex gap-1.5">
-              {images.map((_, i) => (
-                <span
-                  key={i}
-                  className={`h-1.5 w-1.5 rounded-full ${
-                    // wenn Overlay aktiv ist, den Zielindex markieren, sonst current
-                    overlaySrc ? (images.indexOf(overlaySrc) === i ? "bg-white" : "bg-white/60") : (i === currentIdx ? "bg-white" : "bg-white/60")
-                  }`}
-                />
-              ))}
-            </div>
           </>
         )}
       </div>
 
-      {/* Text + Preis + Button */}
+      {/* Rest wie gehabt */}
       <CardContent className="p-6">
         <div className="mb-2 flex items-start justify-between">
           <h3 className="text-xl font-medium text-gray-800">{artwork.title}</h3>
-          <Badge variant={artwork.available ? "default" : "secondary"} className="ml-2">
+          <Badge
+            variant={artwork.available ? "default" : "secondary"}
+            className="ml-2"
+          >
             {artwork.available ? "Verfügbar" : "Nicht verfügbar"}
           </Badge>
         </div>
@@ -301,7 +237,12 @@ function ArtworkCard({ artwork, onZoom }: { artwork: Artwork; onZoom: (src: stri
         {artwork.description ? <ArtworkDescription text={artwork.description} /> : null}
 
         <div className="flex items-center justify-between">
-          {artwork.available ? <span className="text-lg font-medium text-black">{priceFmt}</span> : <span aria-hidden className="inline-block" />}
+          {artwork.available ? (
+            <span className="text-lg font-medium text-black">{priceFmt}</span>
+          ) : (
+            <span aria-hidden className="inline-block" />
+          )}
+
           {artwork.available ? (
             <Button
               size="sm"
