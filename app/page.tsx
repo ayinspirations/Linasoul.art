@@ -245,7 +245,7 @@ export default function LinasoulPortfolio() {
       width={420}
       height={180}
       priority
-      className="mx-auto mb-8 block"
+      className="mx-auto mb-2 block"
     />
 
     {/* Headline */}
