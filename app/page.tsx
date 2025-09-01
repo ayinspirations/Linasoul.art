@@ -161,14 +161,15 @@ export default function LinasoulPortfolio() {
     }
 
     useEffect(() => {
-      if (nextIdx === null || !nextLoaded) return
-      const t = setTimeout(() => {
-        setCurrentIdx(nextIdx)
-        setNextIdx(null)
-        setNextLoaded(false)
-      }, 150) // 150–250ms ist angenehm
-      return () => clearTimeout(t)
-    }, [nextIdx, nextLoaded])
+  if (nextIdx === null || !nextLoaded) return
+  // kleines Delay, damit der Crossfade sichtbar bleibt
+  const t = setTimeout(() => {
+    setCurrentIdx(nextIdx)
+    setNextIdx(null)
+    setNextLoaded(false)
+  }, 300) // 300ms = Dauer der transition-opacity
+  return () => clearTimeout(t)
+}, [nextIdx, nextLoaded])
 
     const currentSrc = images[currentIdx] || "/placeholder.svg"
     const pendingSrc = nextIdx !== null ? images[nextIdx] : null
@@ -176,32 +177,36 @@ export default function LinasoulPortfolio() {
     return (
       <Card className="group overflow-hidden border-0 shadow-lg transition-all duration-300 hover:shadow-2xl">
         <div className="relative aspect-[3/4] overflow-hidden bg-[#f7f5f1]">
-          {/* aktuelles Bild */}
-          <Image
-            key={`curr-${currentSrc}`}
-            src={currentSrc}
-            alt={`${artwork.title} – Abstraktes Acrylbild auf Leinwand von Selina („Lina“) Sickinger`}
-            width={1200}
-            height={1600}
-            sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-            className={`absolute inset-0 h-full w-full cursor-zoom-in object-cover transition-transform duration-300 group-hover:scale-105 transition-opacity duration-200 ${
-              nextIdx !== null ? "opacity-0" : "opacity-100"
-            }`}
-            onClick={() => onZoom(currentSrc)}
-          />
-          {/* nächstes Bild (Crossfade Overlay) */}
-          {pendingSrc && (
-            <Image
-              key={`next-${pendingSrc}`}
-              src={pendingSrc}
-              alt=""
-              width={1200}
-              height={1600}
-              sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
-              className="absolute inset-0 h-full w-full object-cover opacity-100 transition-opacity duration-200"
-              onLoad={() => setNextLoaded(true)}
-            />
-          )}
+  {/* aktuelles Bild bleibt sichtbar, bis das neue geladen ist */}
+  <Image
+    key={`curr-${currentIdx}`}
+    src={currentSrc}
+    alt={`${artwork.title} – Abstraktes Acrylbild auf Leinwand von Selina („Lina“) Sickinger`}
+    width={1200}
+    height={1600}
+    sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+    className={`absolute inset-0 h-full w-full cursor-zoom-in object-cover transition-transform duration-300 group-hover:scale-105 ${
+      nextIdx !== null ? "opacity-100" : "opacity-100"
+    }`}
+    onClick={() => onZoom(currentSrc)}
+  />
+
+  {/* nächstes Bild (overlay), erst sichtbar wenn geladen */}
+  {pendingSrc && (
+    <Image
+      key={`next-${pendingSrc}`}
+      src={pendingSrc}
+      alt=""
+      width={1200}
+      height={1600}
+      sizes="(max-width: 768px) 100vw, (max-width: 1024px) 50vw, 33vw"
+      className={`absolute inset-0 h-full w-full object-cover opacity-0 transition-opacity duration-300 ${
+        nextLoaded ? "opacity-100" : ""
+      }`}
+      onLoad={() => setNextLoaded(true)}
+      onClick={() => onZoom(pendingSrc)}
+    />
+  )}
 
           {hasMultiple && (
             <>
