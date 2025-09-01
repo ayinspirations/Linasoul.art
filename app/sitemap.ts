@@ -1,10 +1,11 @@
-// app/sitemap.ts
-export default function sitemap() {
-  const base = "https://linasoul.art"
-  const now = new Date().toISOString()
+import type { MetadataRoute } from "next"
+
+export default function sitemap(): MetadataRoute.Sitemap {
+  const base = "https://linasoul.art" // <- DEIN KANONISCHER HOST
+  const lastMod = new Date()
 
   return [
-    { url: `${base}/`,           lastModified: now, changeFrequency: "weekly", priority: 1.0 },
-    { url: `${base}/datenschutz`, lastModified: now, changeFrequency: "yearly", priority: 0.2 },
+    { url: `${base}/`,          lastModified: lastMod, changeFrequency: "weekly",  priority: 1 },
+    { url: `${base}/datenschutz`, lastModified: lastMod, changeFrequency: "yearly",  priority: 0.2 },
   ]
 }
