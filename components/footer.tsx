@@ -39,7 +39,7 @@ export default function Footer() {
         {/* Footer Links */}
         <div className="space-x-4 text-sm">
           <Link href="/impressum" className="hover:underline">Impressum</Link>
-          <Link href="/dsgvo" className="hover:underline">Datenschutz</Link>
+          <Link href="/datenschutz" className="hover:underline">Datenschutz</Link>
           <Link href="/agb" className="hover:underline">AGB</Link>
           <Link href="/widerruf" className="hover:underline">Widerruf</Link>
         </div>
