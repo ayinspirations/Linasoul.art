@@ -2,7 +2,7 @@
 
 import Link from "next/link"
 import Image from "next/image"
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { ShoppingCart, Menu, X } from "lucide-react"
 import { useCart } from "../app/cart/CartProvider"
 
@@ -26,11 +26,20 @@ function CartButton() {
 export default function NavBar() {
   const [mobileOpen, setMobileOpen] = useState(false)
 
+  // ESC schließt das Menü
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setMobileOpen(false)
+    }
+    window.addEventListener("keydown", onKey)
+    return () => window.removeEventListener("keydown", onKey)
+  }, [])
+
   return (
     <nav className="fixed top-0 z-50 w-full border-b border-taupe-100 bg-white/80 backdrop-blur-md">
       <div className="mx-auto flex h-16 max-w-7xl items-center justify-between px-4 sm:px-6 lg:px-8">
         {/* Logo */}
-        <Link href="/" className="inline-flex items-center mt-5">
+        <Link href="/" className="inline-flex items-center mt-4">
           <Image
             src="/images/Logo_schwarz_2.png"
             alt="Linasoul Logo"
@@ -67,20 +76,38 @@ export default function NavBar() {
         </div>
       </div>
 
-      {/* Mobile Drawer (Platzhalter, kannst du später ausbauen) */}
+      {/* Mobile Drawer */}
       {mobileOpen && (
-        <div className="md:hidden bg-white/95 p-6 shadow-lg">
-          <nav className="flex flex-col gap-4 text-lg">
-            <Link href="/#about" onClick={() => setMobileOpen(false)}>
-              Künstler
-            </Link>
-            <Link href="/#gallery" onClick={() => setMobileOpen(false)}>
-              Galerie
-            </Link>
-            <Link href="/#contact" onClick={() => setMobileOpen(false)}>
-              Kontakt
-            </Link>
-          </nav>
+        <div className="md:hidden">
+          {/* Overlay */}
+          <div
+            className="fixed inset-0 z-40 bg-black/40"
+            onClick={() => setMobileOpen(false)}
+          />
+          {/* Slide-in Panel */}
+          <div className="fixed right-0 top-0 z-50 h-full w-72 transform bg-white shadow-xl transition-transform duration-300 ease-in-out">
+            <div className="flex h-16 items-center justify-between px-4 border-b">
+              <span className="text-lg font-medium text-gray-800">Menü</span>
+              <button
+                onClick={() => setMobileOpen(false)}
+                aria-label="Menü schließen"
+                className="p-2 text-gray-800 hover:bg-black/5 rounded-md"
+              >
+                <X className="h-6 w-6" />
+              </button>
+            </div>
+            <nav className="flex flex-col gap-4 p-6 text-lg">
+              <Link href="/#about" onClick={() => setMobileOpen(false)}>
+                Künstler
+              </Link>
+              <Link href="/#gallery" onClick={() => setMobileOpen(false)}>
+                Galerie
+              </Link>
+              <Link href="/#contact" onClick={() => setMobileOpen(false)}>
+                Kontakt
+              </Link>
+            </nav>
+          </div>
         </div>
       )}
     </nav>
