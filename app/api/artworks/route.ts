@@ -1,61 +1,48 @@
-import { NextRequest, NextResponse } from "next/server"
-import "server-only"
-import { supabaseServer } from "@/lib/supabaseServer"
-
-export const runtime = "nodejs" // für Datei-Uploads
-
-// ----------------- GET: Alle Artworks abrufen -----------------
-export async function GET() {
-  const { data, error } = await supabaseServer
-    .from("artworks")
-    .select("id, title, description, price_cents, currency, available, images, size, created_at")
-    .order("created_at", { ascending: false })
-
-  if (error) {
-    return NextResponse.json({ error: error.message }, { status: 500 })
-  }
-
-  const artworks = (data ?? []).map((row: any) => ({
-    id: String(row.id),
-    title: row.title ?? "",
-    description: row.description ?? "",
-    price_cents: Number(row.price_cents ?? 0),
-    currency: row.currency ?? "EUR",
-    available: !!row.available,
-    size: row.size ?? "",
-    images: Array.isArray(row.images) ? row.images : row.images ? [row.images] : [],
-  }))
-
-  return NextResponse.json({ artworks })
-}
-
 // ----------------- POST: Neues Artwork anlegen -----------------
 export async function POST(req: NextRequest) {
   try {
     const form = await req.formData()
 
-    const title = String(form.get("title") ?? "")
-    const description = String(form.get("description") ?? "")
-    const size = String(form.get("size") ?? "")
-    const currency = String(form.get("currency") ?? "EUR").toUpperCase()
+    const title = String(form.get("title") ?? "").trim()
+    const description = String(form.get("description") ?? "").trim()
+    const size = String(form.get("size") ?? "").trim()
+
+    // Währung: 3 Buchstaben, zur Sicherheit auf uppercase normalisieren
+    const currencyRaw = String(form.get("currency") ?? "EUR").trim()
+    const currency = currencyRaw.toUpperCase()
+
+    // Preis -> Cents
     const priceStr = String(form.get("price") ?? "0").replace(",", ".")
-    const price_cents = Math.round(parseFloat(priceStr || "0") * 100)
+    const price_cents = Math.round((parseFloat(priceStr) || 0) * 100)
+
+    // Checkbox/Toggle
     const available = String(form.get("available") ?? "true") === "true"
 
+    // Dateien aufs Storage laden
     const files = form.getAll("images").filter((f): f is File => f instanceof File)
+
+    const extFromType = (file: File) => {
+      const map: Record<string, string> = {
+        "image/jpeg": "jpg",
+        "image/png": "png",
+        "image/webp": "webp",
+        "image/avif": "avif",
+      }
+      return map[file.type] || (file.name.split(".").pop() || "jpg")
+    }
 
     const publicUrls: string[] = []
     for (let i = 0; i < files.length; i++) {
       const file = files[i]
       if (!file || file.size === 0) continue
 
-      const ext = file.name.split(".").pop() || "jpg"
-      const filename = `${Date.now()}_${i}.${ext}`
+      const ext = extFromType(file).toLowerCase()
+      const filename = `${Date.now()}_${i}.${ext}`.replace(/[^a-z0-9._-]/gi, "")
       const path = `uploads/${filename}`
 
       const { error: upErr } = await supabaseServer.storage
         .from("artworks")
-        .upload(path, file, { contentType: file.type, upsert: false })
+        .upload(path, file, { contentType: file.type || "application/octet-stream", upsert: false })
 
       if (upErr) {
         return NextResponse.json({ error: `Upload fehlgeschlagen: ${upErr.message}` }, { status: 400 })
@@ -65,24 +52,28 @@ export async function POST(req: NextRequest) {
       if (pub?.publicUrl) publicUrls.push(pub.publicUrl)
     }
 
+    // 👉 WICHTIG: images als STRING speichern (JSON), damit es in text/jsonb/text[]-Setups nicht kollidiert
+    const payload: any = {
+      title,
+      description,
+      size,
+      price_cents,
+      currency,
+      available,
+      images: JSON.stringify(publicUrls), // <— hier der Fix
+    }
+
     const { data, error } = await supabaseServer
       .from("artworks")
-      .insert([
-        {
-          title,
-          description,
-          size,
-          price_cents,
-          currency,
-          available,
-          images: publicUrls,
-        },
-      ])
+      .insert([payload])
       .select()
       .single()
 
     if (error) {
-      return NextResponse.json({ error: error.message }, { status: 400 })
+      // mehr Details zurückgeben hilft beim Debuggen
+      // @ts-ignore
+      const details = error.details || error.hint || ""
+      return NextResponse.json({ error: `${error.message}${details ? ` – ${details}` : ""}` }, { status: 400 })
     }
 
     return NextResponse.json({ ok: true, artwork: data })
