@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import { supabaseClient } from "@/lib/supabaseClient"
 
 export default function AdminCreateArtwork() {
   const [loading, setLoading] = useState(false)
@@ -14,35 +15,80 @@ export default function AdminCreateArtwork() {
     const formEl = e.currentTarget
     const fd = new FormData(formEl)
 
-    // Checkbox-Wert explizit als "true"/"false" setzen
+    // Checkbox "available" explizit setzen
     const availableInput = formEl.elements.namedItem("available") as HTMLInputElement | null
     fd.set("available", availableInput?.checked ? "true" : "false")
 
-    // Währung auf Großbuchstaben normalisieren
+    // Währung auf Uppercase normalisieren
     const currencyInput = formEl.elements.namedItem("currency") as HTMLInputElement | null
     if (currencyInput?.value) fd.set("currency", currencyInput.value.toUpperCase())
 
-    // Dateien sicher re-anhängen (räumt Browser-Inkonsistenzen aus)
+    // Bilder einsammeln
     const imagesInput = formEl.elements.namedItem("images") as HTMLInputElement | null
-    if (imagesInput?.files) {
-      fd.delete("images")
-      Array.from(imagesInput.files).forEach((f) => fd.append("images", f))
-    }
+    const files = imagesInput?.files ? Array.from(imagesInput.files).filter((f) => f && f.size > 0) : []
 
     try {
-      // 🔁 KORREKTE API-Route & Methode
-      const res = await fetch("/api/artworks", {
+      // -----------------------------
+      // 1) Direkt-Upload zu Supabase
+      // -----------------------------
+      let publicUrls: string[] = []
+
+      if (files.length) {
+        // (a) signed upload tokens vom Server holen
+        const meta = files.map((f) => ({ name: f.name, type: f.type }))
+        const signRes = await fetch("/api/admin/storage/signed-upload", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ files: meta }),
+        })
+        const signJson = await signRes.json()
+        if (!signRes.ok) throw new Error(signJson?.error || "Signed upload failed")
+
+        const uploads: Array<{ path: string; token: string }> = signJson.uploads || []
+        if (uploads.length !== files.length) {
+          throw new Error("Upload tokens mismatch")
+        }
+
+        // (b) Dateien direkt in den Bucket hochladen
+        const bucket = supabaseClient.storage.from("artworks")
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i]
+          const { path, token } = uploads[i]
+
+          const { error: upErr } = await bucket.uploadToSignedUrl(path, token, file, {
+            contentType: file.type || "application/octet-stream",
+            upsert: false,
+          })
+          if (upErr) throw new Error(upErr.message)
+
+          // (c) öffentliche URL holen
+          const { data: pub } = bucket.getPublicUrl(path)
+          if (pub?.publicUrl) publicUrls.push(pub.publicUrl)
+        }
+      }
+
+      // --------------------------------------
+      // 2) Metadaten + URLs an /api/artworks
+      // --------------------------------------
+      const metaForm = new FormData()
+      metaForm.set("title", String(fd.get("title") || ""))
+      metaForm.set("description", String(fd.get("description") || ""))
+      metaForm.set("size", String(fd.get("size") || ""))
+      metaForm.set("currency", String(fd.get("currency") || "EUR"))
+      metaForm.set("price", String(fd.get("price") || "0"))
+      metaForm.set("available", String(fd.get("available") || "false"))
+      metaForm.set("image_urls_json", JSON.stringify(publicUrls)) // ✨ WICHTIG
+
+      const saveRes = await fetch("/api/artworks", {
         method: "POST",
-        body: fd, // keinen Content-Type manuell setzen!
+        body: metaForm,
       })
 
-      // bessere Fehlersichtbarkeit
-      const text = await res.text()
+      const text = await saveRes.text()
       let json: any = null
       try { json = JSON.parse(text) } catch {}
-      if (!res.ok) {
-        setMessage((json && (json.error || json.details || json.hint)) || text || "Fehler beim Speichern")
-        return
+      if (!saveRes.ok) {
+        throw new Error((json && (json.error || json.details || json.hint)) || text || "Fehler beim Speichern")
       }
 
       setMessage("Gespeichert 🎉")
@@ -58,7 +104,7 @@ export default function AdminCreateArtwork() {
     <main className="mx-auto max-w-2xl p-6">
       <h1 className="mb-6 text-3xl font-light">Neues Artwork anlegen</h1>
 
-      <form onSubmit={onSubmit} className="space-y-4" encType="multipart/form-data">
+      <form onSubmit={onSubmit} className="space-y-4">
         <div className="grid gap-4">
           <label className="block">
             <span className="text-sm text-gray-700">Titel</span>
