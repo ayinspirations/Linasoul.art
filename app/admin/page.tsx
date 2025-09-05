@@ -11,20 +11,42 @@ export default function AdminCreateArtwork() {
     setLoading(true)
     setMessage(null)
 
-    const form = new FormData(e.currentTarget)
+    const formEl = e.currentTarget
+    const fd = new FormData(formEl)
+
+    // Checkbox-Wert explizit als "true"/"false" setzen
+    const availableInput = formEl.elements.namedItem("available") as HTMLInputElement | null
+    fd.set("available", availableInput?.checked ? "true" : "false")
+
+    // Währung auf Großbuchstaben normalisieren
+    const currencyInput = formEl.elements.namedItem("currency") as HTMLInputElement | null
+    if (currencyInput?.value) fd.set("currency", currencyInput.value.toUpperCase())
+
+    // Dateien sicher re-anhängen (räumt Browser-Inkonsistenzen aus)
+    const imagesInput = formEl.elements.namedItem("images") as HTMLInputElement | null
+    if (imagesInput?.files) {
+      fd.delete("images")
+      Array.from(imagesInput.files).forEach((f) => fd.append("images", f))
+    }
 
     try {
-      const res = await fetch("/api/admin/artworks", {
+      // 🔁 KORREKTE API-Route & Methode
+      const res = await fetch("/api/artworks", {
         method: "POST",
-        body: form,
+        body: fd, // keinen Content-Type manuell setzen!
       })
-      const json = await res.json()
+
+      // bessere Fehlersichtbarkeit
+      const text = await res.text()
+      let json: any = null
+      try { json = JSON.parse(text) } catch {}
       if (!res.ok) {
-        setMessage(json?.error || "Fehler beim Speichern")
-      } else {
-        setMessage("Gespeichert 🎉")
-        e.currentTarget.reset()
+        setMessage((json && (json.error || json.details || json.hint)) || text || "Fehler beim Speichern")
+        return
       }
+
+      setMessage("Gespeichert 🎉")
+      formEl.reset()
     } catch (err: any) {
       setMessage(err?.message || "Fehler")
     } finally {
@@ -36,11 +58,11 @@ export default function AdminCreateArtwork() {
     <main className="mx-auto max-w-2xl p-6">
       <h1 className="mb-6 text-3xl font-light">Neues Artwork anlegen</h1>
 
-      <form onSubmit={onSubmit} className="space-y-4">
+      <form onSubmit={onSubmit} className="space-y-4" encType="multipart/form-data">
         <div className="grid gap-4">
           <label className="block">
             <span className="text-sm text-gray-700">Titel</span>
-            <input name="title" required className="mt-1 w-full rounded border p-2" />
+            <input name="title" required className="mt-1 w-full rounded border p-2" autoComplete="off" />
           </label>
 
           <label className="block">
@@ -49,8 +71,8 @@ export default function AdminCreateArtwork() {
           </label>
 
           <label className="block">
-            <span className="text-sm text-gray-700">Größe (Format: 24 x 36)</span>
-            <input name="size" placeholder="24 x 36" className="mt-1 w-full rounded border p-2" />
+            <span className="text-sm text-gray-700">Größe (z. B. 80 x 60 cm)</span>
+            <input name="size" placeholder="80 x 60 cm" className="mt-1 w-full rounded border p-2" autoComplete="off" />
           </label>
 
           <div className="grid grid-cols-2 gap-4">
@@ -63,11 +85,19 @@ export default function AdminCreateArtwork() {
                 step="0.01"
                 placeholder="z. B. 850"
                 className="mt-1 w-full rounded border p-2"
+                inputMode="decimal"
+                autoComplete="off"
               />
             </label>
             <label className="block">
               <span className="text-sm text-gray-700">Währung</span>
-              <input name="currency" defaultValue="EUR" className="mt-1 w-full rounded border p-2" />
+              <input
+                name="currency"
+                defaultValue="EUR"
+                className="mt-1 w-full rounded border p-2"
+                autoComplete="off"
+                maxLength={3}
+              />
             </label>
           </div>
 
