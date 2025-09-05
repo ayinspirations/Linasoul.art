@@ -1,56 +1,69 @@
-import { NextResponse } from "next/server";
-import Stripe from "stripe";
-import { supabaseAdmin } from "@/lib/supabaseAdmin";
+// app/api/stripe/webhook/route.ts
+import "server-only"
+import { NextRequest, NextResponse } from "next/server"
+import { stripe } from "@/lib/stripe"                // nutzt STRIPE_SECRET_KEY
+import { supabaseServer } from "@/lib/supabaseServer" // nutzt Service-Role
 
-export const runtime = "nodejs";
+export const runtime = "nodejs"
 
-const STRIPE_SECRET_KEY = process.env.STRIPE_SECRET_KEY!;
-const STRIPE_WEBHOOK_SECRET = process.env.STRIPE_WEBHOOK_SECRET!;
+export async function POST(req: NextRequest) {
+  const sig = req.headers.get("stripe-signature")
+  const whSecret = process.env.STRIPE_WEBHOOK_SECRET
+  if (!sig || !whSecret) {
+    return NextResponse.json({ error: "Missing Stripe webhook secret/signature" }, { status: 400 })
+  }
 
-const stripe = new Stripe(STRIPE_SECRET_KEY, { apiVersion: "2024-06-20" });
+  // Wichtig: unveränderten Raw-Body an Stripe geben
+  const buf = Buffer.from(await req.arrayBuffer())
 
-export async function POST(req: Request) {
+  let event
   try {
-    const sig = req.headers.get("stripe-signature");
-    if (!sig) return NextResponse.json({ error: "Missing signature" }, { status: 400 });
+    event = stripe.webhooks.constructEvent(buf, sig, whSecret)
+  } catch (err: any) {
+    return NextResponse.json({ error: `Invalid signature: ${err.message}` }, { status: 400 })
+  }
 
-    const rawBody = await req.text();
-    let event: Stripe.Event;
+  try {
+    if (
+      event.type === "checkout.session.completed" ||
+      event.type === "checkout.session.async_payment_succeeded"
+    ) {
+      const session = event.data.object as any
 
-    try {
-      event = stripe.webhooks.constructEvent(rawBody, sig, STRIPE_WEBHOOK_SECRET);
-    } catch (err: any) {
-      return NextResponse.json({ error: `Webhook signature verification failed: ${err.message}` }, { status: 400 });
-    }
-
-    if (event.type === "checkout.session.completed") {
-      const session = event.data.object as Stripe.Checkout.Session;
-
-      // Optionaler Sicherheits-Check
-      if (session.payment_status !== "paid") {
-        return NextResponse.json({ ok: true });
+      // Nur bezahlte Sessions verarbeiten
+      if (session.payment_status && session.payment_status !== "paid") {
+        return NextResponse.json({ skipped: "not paid" })
       }
 
-      const idsCsv = session.metadata?.artwork_ids_csv || "";
-      const ids = idsCsv.split(",").map((s) => s.trim()).filter(Boolean);
+      // IDs aus der Metadata lesen (neu: artwork_ids; alt: artwork_ids_csv)
+      const idsCsv: string =
+        session?.metadata?.artwork_ids ??
+        session?.metadata?.artwork_ids_csv ??
+        ""
 
-      if (ids.length > 0) {
-        const { error } = await supabaseAdmin
+      const ids = idsCsv
+        .split(",")
+        .map((s: string) => s.trim())
+        .filter(Boolean)
+
+      if (ids.length) {
+        const { error } = await supabaseServer
           .from("artworks")
           .update({ available: false })
-          .in("id", ids);
+          .in("id", ids)
 
         if (error) {
-          console.error("Supabase update error:", error);
-          // 2xx an Stripe zurück, damit sie nicht endlos retrys schicken – aber wir loggen es
+          console.error("Supabase update error:", error)
+          // Stripe nicht mit 5xx antworten, sonst retryschleife:
+          return NextResponse.json({ ok: false, supabase: error.message })
         }
       }
     }
 
-    return NextResponse.json({ received: true });
+    return NextResponse.json({ received: true })
   } catch (e: any) {
-    console.error("Webhook error:", e);
-    // Stripe erwartet 2xx für "ok" oder 4xx/5xx für retry
-    return NextResponse.json({ error: "Webhook handler failed" }, { status: 400 });
+    console.error("Webhook handler error:", e)
+    // 2xx zurückgeben, damit Stripe nicht endlos retried. Fehler trotzdem loggen.
+    return NextResponse.json({ ok: false, error: e?.message ?? "webhook error" })
   }
 }
