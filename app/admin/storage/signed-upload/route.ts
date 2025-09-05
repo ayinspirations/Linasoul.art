@@ -1,7 +1,6 @@
-// app/api/admin/storage/signed-upload/route.ts
 import "server-only";
 import { NextRequest, NextResponse } from "next/server";
-import { supabaseServer } from "@/lib/supabaseServer"; // Service-Role
+import { supabaseServer } from "@/lib/supabaseServer";
 
 export const runtime = "nodejs";
 
@@ -12,7 +11,7 @@ export async function POST(req: NextRequest) {
     const files = Array.isArray(body?.files) ? body.files : [];
     if (!files.length) return NextResponse.json({ error: "No files" }, { status: 400 });
 
-    const uploads: Array<{ path: string; token: string }> = [];
+    const uploads: Array<{ path: string; token?: string; signedUrl?: string }> = [];
 
     for (let i = 0; i < files.length; i++) {
       const f = files[i] || {};
@@ -28,10 +27,17 @@ export async function POST(req: NextRequest) {
         .from("artworks")
         .createSignedUploadUrl(path);
 
-      if (error || !data?.token) {
+      if (error || !data) {
         return NextResponse.json({ error: error?.message || "signed url failed" }, { status: 400 });
       }
-      uploads.push({ path, token: data.token });
+
+      // Verschiedene SDK-Versionen liefern unterschiedlich zurück
+      // -> wir geben einfach *beides* durch, was vorhanden ist.
+      uploads.push({
+        path: data.path ?? path,
+        token: (data as any).token,         // neuere SDKs
+        signedUrl: (data as any).signedUrl, // manche Versionen
+      });
     }
 
     return NextResponse.json({ uploads });
