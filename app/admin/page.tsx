@@ -3,9 +3,7 @@
 import { useState } from "react"
 import { supabaseClient } from "@/lib/supabaseClient"
 
-type SignedUpload =
-  | { path: string; token: string; signedUrl?: string }
-  | { path: string; token?: string; signedUrl: string }
+type SignedUpload = { path: string; uploadUrl: string }
 
 export default function AdminCreateArtwork() {
   const [loading, setLoading] = useState(false)
@@ -19,18 +17,18 @@ export default function AdminCreateArtwork() {
     const formEl = e.currentTarget
     const fd = new FormData(formEl)
 
-    // Checkbox & Currency normalisieren
+    // Checkbox & Währung normalisieren
     const availableInput = formEl.elements.namedItem("available") as HTMLInputElement | null
     fd.set("available", availableInput?.checked ? "true" : "false")
     const currencyInput = formEl.elements.namedItem("currency") as HTMLInputElement | null
     if (currencyInput?.value) fd.set("currency", currencyInput.value.toUpperCase())
 
-    // Dateien
+    // Dateien einsammeln
     const imagesInput = formEl.elements.namedItem("images") as HTMLInputElement | null
     const files = imagesInput?.files ? Array.from(imagesInput.files).filter((f) => f && f.size > 0) : []
 
     try {
-      // ---------- 1) Signed Uploads anfordern ----------
+      // 1) Signed Upload URLs holen
       let publicUrls: string[] = []
       if (files.length) {
         const meta = files.map((f) => ({ name: f.name, type: f.type }))
@@ -40,46 +38,35 @@ export default function AdminCreateArtwork() {
           body: JSON.stringify({ files: meta }),
         })
         const signJson = await signRes.json()
-        if (!signRes.ok) throw new Error(`[Sign] ${signJson?.error || "Signed upload failed"}`)
+        if (!signRes.ok) throw new Error(signJson?.error || "Signed upload failed")
 
         const uploads: SignedUpload[] = signJson.uploads || []
-        if (uploads.length !== files.length) {
-          throw new Error("[Sign] Upload tokens count mismatch")
-        }
+        if (uploads.length !== files.length) throw new Error("Upload tokens mismatch")
 
-        // ---------- 2) Dateien hochladen (kompatibel zu beiden SDK-Signaturen) ----------
-        const bucket = supabaseClient.storage.from("artworks")
+        // 2) Dateien via PUT direkt hochladen
         for (let i = 0; i < files.length; i++) {
           const file = files[i]
-          const up = uploads[i] as any
+          const { path, uploadUrl } = uploads[i]
 
-          let upErr
-          if (up?.signedUrl) {
-            // Variante A: signedUrl + file
-            const { error } = await bucket.uploadToSignedUrl(up.signedUrl, file, {
-              contentType: file.type || "application/octet-stream",
-              upsert: false,
-            })
-            upErr = error
-          } else if (up?.path && up?.token) {
-            // Variante B: path + token + file
-            const { error } = await bucket.uploadToSignedUrl(up.path, up.token, file, {
-              contentType: file.type || "application/octet-stream",
-              upsert: false,
-            })
-            upErr = error
-          } else {
-            throw new Error("[Upload] Missing signedUrl or token")
+          const put = await fetch(uploadUrl, {
+            method: "PUT",
+            headers: {
+              "content-type": file.type || "application/octet-stream",
+            },
+            body: file,
+          })
+          if (!put.ok) {
+            const t = await put.text().catch(() => "")
+            throw new Error(`Upload failed (${put.status}) ${t}`)
           }
 
-          if (upErr) throw new Error(`[Upload] ${upErr.message}`)
-
-          const { data: pub } = bucket.getPublicUrl(up.path)
+          // 3) Öffentliche URL holen
+          const { data: pub } = supabaseClient.storage.from("artworks").getPublicUrl(path)
           if (pub?.publicUrl) publicUrls.push(pub.publicUrl)
         }
       }
 
-      // ---------- 3) Metadaten speichern ----------
+      // 4) Metadaten + Bild-URLs speichern
       const metaForm = new FormData()
       metaForm.set("title", String(fd.get("title") || ""))
       metaForm.set("description", String(fd.get("description") || ""))
@@ -94,7 +81,7 @@ export default function AdminCreateArtwork() {
       let json: any = null
       try { json = JSON.parse(text) } catch {}
       if (!saveRes.ok) {
-        throw new Error(`[Save] ${(json && (json.error || json.details || json.hint)) || text || "Fehler beim Speichern"}`)
+        throw new Error((json && (json.error || json.details || json.hint)) || text || "Fehler beim Speichern")
       }
 
       setMessage("Gespeichert 🎉")
