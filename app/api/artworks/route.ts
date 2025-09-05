@@ -23,9 +23,7 @@ export async function GET() {
   try {
     const { data, error } = await supabaseServer
       .from("artworks")
-      .select(
-        "id, title, description, price_cents, currency, available, images, size, created_at",
-      )
+      .select("id, title, description, price_cents, currency, available, images, size, created_at")
       .order("created_at", { ascending: false })
 
     if (error) return jsonError(error, 500)
@@ -39,7 +37,7 @@ export async function GET() {
         currency: String(row.currency ?? "eur").toLowerCase(),
         available: Boolean(row.available),
         size: row.size ?? "",
-        // images ist jsonb (Array) – aber wir normalisieren trotzdem defensiv
+        // images ist jsonb (Array) – defensiv normalisieren
         images: Array.isArray(row.images)
           ? row.images.filter((u: any) => typeof u === "string" && u.trim())
           : (() => {
@@ -70,7 +68,7 @@ export async function POST(req: NextRequest) {
     const description = (String(form.get("description") ?? "").trim()) || null
     const size = (String(form.get("size") ?? "").trim()) || null
 
-    // currency in deiner DB lowercase (eur)
+    // currency in DB lowercase (eur)
     const currencyInput = String(form.get("currency") ?? "eur").trim()
     const currency = /^[A-Za-z]{3}$/.test(currencyInput) ? currencyInput.toLowerCase() : "eur"
 
@@ -80,40 +78,58 @@ export async function POST(req: NextRequest) {
     const availableVal = String(form.get("available") ?? "true").toLowerCase()
     const available = ["true", "on", "1"].includes(availableVal)
 
-    const files = form.getAll("images").filter((f): f is File => f instanceof File)
-
-    const publicUrls: string[] = []
-    for (let i = 0; i < files.length; i++) {
-      const file = files[i]
-      if (!file || file.size === 0) continue
-
-      const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "")
-      const safeName = `${Date.now()}_${i}.${ext}`.replace(/[^a-z0-9._-]/gi, "")
-      const path = `uploads/${safeName}`
-
-      const { error: upErr } = await supabaseServer.storage
-        .from("artworks")
-        .upload(path, file, {
-          contentType: file.type || "application/octet-stream",
-          upsert: false,
-        })
-
-      if (upErr) {
-        return NextResponse.json({ error: `Upload fehlgeschlagen: ${upErr.message}` }, { status: 400 })
+    // 1) Bevorzugt: URLs aus Direkt-Upload (image_urls_json)
+    let publicUrls: string[] = []
+    try {
+      const urlsJson = form.get("image_urls_json")
+      if (urlsJson) {
+        const parsed = JSON.parse(String(urlsJson))
+        if (Array.isArray(parsed)) {
+          publicUrls = parsed
+            .map((u: any) => String(u || ""))
+            .filter((u) => /^https?:\/\//i.test(u))
+        }
       }
+    } catch {
+      // ignorieren – wir fallen ggf. auf Datei-Upload zurück
+    }
 
-      const { data: pub } = supabaseServer.storage.from("artworks").getPublicUrl(path)
-      if (pub?.publicUrl) publicUrls.push(pub.publicUrl)
+    // 2) Fallback: (nur falls keine URLs übergeben wurden) – klassischer Datei-Upload
+    if (!publicUrls.length) {
+      const files = form.getAll("images").filter((f): f is File => f instanceof File)
+
+      for (let i = 0; i < files.length; i++) {
+        const file = files[i]
+        if (!file || file.size === 0) continue
+
+        const ext = (file.name.split(".").pop() || "jpg").toLowerCase().replace(/[^a-z0-9]/g, "")
+        const safeName = `${Date.now()}_${i}.${ext}`.replace(/[^a-z0-9._-]/gi, "")
+        const path = `uploads/${safeName}`
+
+        const { error: upErr } = await supabaseServer.storage
+          .from("artworks")
+          .upload(path, file, {
+            contentType: file.type || "application/octet-stream",
+            upsert: false,
+          })
+
+        if (upErr) {
+          return NextResponse.json({ error: `Upload fehlgeschlagen: ${upErr.message}` }, { status: 400 })
+        }
+
+        const { data: pub } = supabaseServer.storage.from("artworks").getPublicUrl(path)
+        if (pub?.publicUrl) publicUrls.push(pub.publicUrl)
+      }
     }
 
     const payload = {
       title,
-      description,          // null wenn leer
-      size,                 // null wenn leer
-      price_cents,          // int
-      currency,             // "eur"
-      available,            // boolean
-      images: publicUrls,   // jsonb ARRAY (kein JSON.stringify)
+      description,      // null wenn leer
+      size,             // null wenn leer
+      price_cents,      // int
+      currency,         // "eur"
+      available,        // boolean
+      images: publicUrls, // jsonb ARRAY
     }
 
     const { data, error } = await supabaseServer
@@ -134,4 +150,3 @@ export async function POST(req: NextRequest) {
 export async function OPTIONS() {
   return NextResponse.json({}, { status: 200 })
 }
-
