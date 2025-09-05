@@ -356,7 +356,7 @@ function ArtworkCard({ artwork, onZoom }: { artwork: Artwork; onZoom: (src: stri
             </div>
             <div className="relative">
               <div className="aspect-square overflow-hidden rounded-2xl shadow-2xl">
-                <Image src="/images/lina-abstrakt-acrylmalerei-kuenstlerin.jpeg" alt="Lina im Atelier" width={1200} height={1200} className="object-cover object-[50%_30%]" />
+                <Image src="/images/lina-abstrakt-acrylmalerei-kuenstlerin.jpeg" alt="Lina im Atelier" width={1200} height={1200} className="object-cover object-[50%_42%]" />
               </div>
               <div className="absolute -bottom-6 -right-6 flex h-24 w-24 items-center justify-center rounded-full bg-taupe-100">
                 <Palette className="h-8 w-8 text-taupe-400" />
