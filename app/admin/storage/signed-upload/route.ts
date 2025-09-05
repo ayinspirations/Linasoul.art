@@ -4,14 +4,19 @@ import { supabaseServer } from "@/lib/supabaseServer";
 
 export const runtime = "nodejs";
 
-/** Body: { files: [{ name: string, type: string }, ...] } */
+const SUPABASE_URL = (process.env.NEXT_PUBLIC_SUPABASE_URL || "").replace(/\/$/, "");
+
+/**
+ * Body: { files: [{ name: string, type: string }, ...] }
+ * Antwort: { uploads: [{ path: string, uploadUrl: string }] }
+ */
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json().catch(() => null);
     const files = Array.isArray(body?.files) ? body.files : [];
     if (!files.length) return NextResponse.json({ error: "No files" }, { status: 400 });
 
-    const uploads: Array<{ path: string; token?: string; signedUrl?: string }> = [];
+    const uploads: Array<{ path: string; uploadUrl: string }> = [];
 
     for (let i = 0; i < files.length; i++) {
       const f = files[i] || {};
@@ -31,13 +36,24 @@ export async function POST(req: NextRequest) {
         return NextResponse.json({ error: error?.message || "signed url failed" }, { status: 400 });
       }
 
-      // Verschiedene SDK-Versionen liefern unterschiedlich zurück
-      // -> wir geben einfach *beides* durch, was vorhanden ist.
-      uploads.push({
-        path: data.path ?? path,
-        token: (data as any).token,         // neuere SDKs
-        signedUrl: (data as any).signedUrl, // manche Versionen
-      });
+      // Verschiedene SDK-Versionen liefern unterschiedliche Felder:
+      // - data.signedUrl (relativer Pfad, z.B. /object/sign/...)
+      // - data.token (nur Token; Pfad müssen wir selbst bauen)
+      const signedUrlRel = (data as any).signedUrl as string | undefined;
+      const token = (data as any).token as string | undefined;
+
+      let uploadUrl: string;
+      if (signedUrlRel) {
+        uploadUrl = `${SUPABASE_URL}/storage/v1${signedUrlRel}`;
+      } else if (token) {
+        uploadUrl = `${SUPABASE_URL}/storage/v1/object/sign/artworks/${path}?token=${encodeURIComponent(
+          token
+        )}`;
+      } else {
+        return NextResponse.json({ error: "No signed data returned" }, { status: 400 });
+      }
+
+      uploads.push({ path, uploadUrl });
     }
 
     return NextResponse.json({ uploads });
