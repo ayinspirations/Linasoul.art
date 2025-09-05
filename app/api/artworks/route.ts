@@ -4,19 +4,20 @@ export async function POST(req: NextRequest) {
     const form = await req.formData()
 
     const title = String(form.get("title") ?? "").trim()
-    const description = String(form.get("description") ?? "").trim()
-    const size = String(form.get("size") ?? "").trim()
+    const descriptionRaw = String(form.get("description") ?? "").trim()
+    const sizeRaw = String(form.get("size") ?? "").trim()
 
-    // Währung: 3 Buchstaben, zur Sicherheit auf uppercase normalisieren
-    const currencyRaw = String(form.get("currency") ?? "EUR").trim()
-    const currency = currencyRaw.toUpperCase()
+    // Währung: exakt 3 Buchstaben (ISO-4217), sonst Fallback "EUR"
+    const currencyInput = String(form.get("currency") ?? "EUR").trim()
+    const currency = /^[A-Za-z]{3}$/.test(currencyInput) ? currencyInput.toUpperCase() : "EUR"
 
-    // Preis -> Cents
-    const priceStr = String(form.get("price") ?? "0").replace(",", ".")
+    // Preis -> Cents (Komma/Punkt)
+    const priceStr = String(form.get("price") ?? "0").replace(/[^\d.,-]/g, "").replace(",", ".")
     const price_cents = Math.round((parseFloat(priceStr) || 0) * 100)
 
     // Checkbox/Toggle
-    const available = String(form.get("available") ?? "true") === "true"
+    const availableVal = String(form.get("available") ?? "true").toLowerCase()
+    const available = availableVal === "true" || availableVal === "on" || availableVal === "1"
 
     // Dateien aufs Storage laden
     const files = form.getAll("images").filter((f): f is File => f instanceof File)
@@ -28,7 +29,7 @@ export async function POST(req: NextRequest) {
         "image/webp": "webp",
         "image/avif": "avif",
       }
-      return map[file.type] || (file.name.split(".").pop() || "jpg")
+      return (map[file.type] || (file.name.split(".").pop() || "jpg")).toLowerCase()
     }
 
     const publicUrls: string[] = []
@@ -36,7 +37,7 @@ export async function POST(req: NextRequest) {
       const file = files[i]
       if (!file || file.size === 0) continue
 
-      const ext = extFromType(file).toLowerCase()
+      const ext = extFromType(file)
       const filename = `${Date.now()}_${i}.${ext}`.replace(/[^a-z0-9._-]/gi, "")
       const path = `uploads/${filename}`
 
@@ -52,15 +53,20 @@ export async function POST(req: NextRequest) {
       if (pub?.publicUrl) publicUrls.push(pub.publicUrl)
     }
 
-    // 👉 WICHTIG: images als STRING speichern (JSON), damit es in text/jsonb/text[]-Setups nicht kollidiert
+    // LEERE Strings -> null (wichtig bei CHECK/Regex-Constraints)
     const payload: any = {
-      title,
-      description,
-      size,
+      title, // UI hat "required", daher lassen wir es so
+      description: descriptionRaw || null,
+      size: sizeRaw || null,
       price_cents,
       currency,
       available,
-      images: JSON.stringify(publicUrls), // <— hier der Fix
+      // WICHTIG: Wenn deine DB-Spalte `images` = jsonb oder text[] ist,
+      // nimm die folgende Zeile (Array speichern):
+      // images: publicUrls.length ? publicUrls : null,
+
+      // Wenn `images` = text/varchar (ohne Array/JSON-Typ), nimm diese:
+      images: publicUrls.length ? JSON.stringify(publicUrls) : null,
     }
 
     const { data, error } = await supabaseServer
@@ -70,14 +76,24 @@ export async function POST(req: NextRequest) {
       .single()
 
     if (error) {
-      // mehr Details zurückgeben hilft beim Debuggen
-      // @ts-ignore
-      const details = error.details || error.hint || ""
-      return NextResponse.json({ error: `${error.message}${details ? ` – ${details}` : ""}` }, { status: 400 })
+      // ausführlichere Fehler – hilft sofort beim Eingrenzen
+      const anyErr: any = error
+      return NextResponse.json(
+        {
+          error: anyErr.message || "Insert-Fehler",
+          details: anyErr.details ?? null,
+          hint: anyErr.hint ?? null,
+          code: anyErr.code ?? null,
+          payload, // Debug-Hilfe: siehst, was reinging (nur in DEV nutzen)
+        },
+        { status: 400 },
+      )
     }
 
     return NextResponse.json({ ok: true, artwork: data })
   } catch (e: any) {
+    // Serverseitiges Loggen hilft in den Vercel-Logs/CLI
+    console.error("POST /api/artworks failed:", e)
     return NextResponse.json({ error: e?.message || "Unbekannter Fehler" }, { status: 500 })
   }
 }
