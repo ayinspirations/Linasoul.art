@@ -332,6 +332,40 @@ function ArtworkCard({ artwork, onZoom }: { artwork: Artwork; onZoom: (src: stri
         </div>
       </section>
 
+       {/* Über die Künstlerin */}
+      <section id="about" className="bg-white py-20">
+        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
+          <div className="grid items-center gap-12 md:grid-cols-2">
+            <div>
+              <h2 className="mb-6 text-4xl font-light text-gray-800">Über die Künstlerin</h2>
+              <div className="space-y-4 leading-relaxed text-gray-600">
+                <p>
+                  Ich bin <strong>Selina („Lina“) Sickinger</strong> und arbeite mit Schichtungen aus Acrylfarben und
+                  Texturen, um Tiefe, Bewegung und Harmonie zu erzeugen. Jedes Bild entsteht intuitiv als Antwort auf
+                  Gefühl und Moment.
+                </p>
+                <p>
+                  Meine <em>abstrakte Acrylmalerei</em> verbindet reduzierte Farbwelten mit organischen Strukturen – für
+                  Kunstwerke, die Räume tragen und die Seele berühren.
+                </p>
+              </div>
+              <div className="mt-8 flex items-center space-x-4">
+                <Heart className="h-5 w-5 text-taupe-400" />
+                <span className="text-gray-600">Creating art that touches the soul</span>
+              </div>
+            </div>
+            <div className="relative">
+              <div className="aspect-square overflow-hidden rounded-2xl shadow-2xl">
+                <Image src="/images/AboutMe1.jpeg" alt="Lina im Atelier" width={1200} height={1200} className="object-cover" />
+              </div>
+              <div className="absolute -bottom-6 -right-6 flex h-24 w-24 items-center justify-center rounded-full bg-taupe-100">
+                <Palette className="h-8 w-8 text-taupe-400" />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* Galerie (direkt nach Hero) */}
       <section id="gallery" className="bg-gradient-to-br from-taupe-50 to-taupe-100 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -365,40 +399,6 @@ function ArtworkCard({ artwork, onZoom }: { artwork: Artwork; onZoom: (src: stri
                 }}
               />
             ))}
-          </div>
-        </div>
-      </section>
-
-      {/* Über die Künstlerin */}
-      <section id="about" className="bg-white py-20">
-        <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
-          <div className="grid items-center gap-12 md:grid-cols-2">
-            <div>
-              <h2 className="mb-6 text-4xl font-light text-gray-800">Über die Künstlerin</h2>
-              <div className="space-y-4 leading-relaxed text-gray-600">
-                <p>
-                  Ich bin <strong>Selina („Lina“) Sickinger</strong> und arbeite mit Schichtungen aus Acrylfarben und
-                  Texturen, um Tiefe, Bewegung und Harmonie zu erzeugen. Jedes Bild entsteht intuitiv als Antwort auf
-                  Gefühl und Moment.
-                </p>
-                <p>
-                  Meine <em>abstrakte Acrylmalerei</em> verbindet reduzierte Farbwelten mit organischen Strukturen – für
-                  Kunstwerke, die Räume tragen und die Seele berühren.
-                </p>
-              </div>
-              <div className="mt-8 flex items-center space-x-4">
-                <Heart className="h-5 w-5 text-taupe-400" />
-                <span className="text-gray-600">Creating art that touches the soul</span>
-              </div>
-            </div>
-            <div className="relative">
-              <div className="aspect-square overflow-hidden rounded-2xl shadow-2xl">
-                <Image src="/images/AboutMe1.jpeg" alt="Lina im Atelier" width={1200} height={1200} className="object-cover" />
-              </div>
-              <div className="absolute -bottom-6 -right-6 flex h-24 w-24 items-center justify-center rounded-full bg-taupe-100">
-                <Palette className="h-8 w-8 text-taupe-400" />
-              </div>
-            </div>
           </div>
         </div>
       </section>
