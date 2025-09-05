@@ -1,15 +1,14 @@
 // lib/supabaseServer.ts
+import "server-only"
 import { createClient } from "@supabase/supabase-js"
 
-const url = process.env.NEXT_PUBLIC_SUPABASE_URL!
-const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-const service = process.env.SUPABASE_SERVICE_ROLE! // <— exakt so, wie in Vercel benannt
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL
+const anon = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
+const service = process.env.SUPABASE_SERVICE_ROLE // exakt wie in Vercel
 
-// Client für serverseitige Admin-Operationen (RLS-Bypass)
-// Achtung: nur auf dem Server verwenden!
-export const supabaseServer = createClient(url, service, {
-  auth: { persistSession: false },
-})
+if (!url) throw new Error("Missing NEXT_PUBLIC_SUPABASE_URL")
+if (!anon) throw new Error("Missing NEXT_PUBLIC_SUPABASE_ANON_KEY")
+if (!service) throw new Error("Missing SUPABASE_SERVICE_ROLE")
 
-// Optional: wenn du irgendwo clientseitig liest, nimm den anon key:
+export const supabaseServer = createClient(url, service, { auth: { persistSession: false } })
 export const supabasePublic = createClient(url, anon)
