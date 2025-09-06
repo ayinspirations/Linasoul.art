@@ -3,7 +3,7 @@
 import { useState } from "react"
 import { supabaseClient } from "@/lib/supabaseClient"
 
-type SignedUpload = { path: string; uploadUrl: string }
+type SignedUpload = { path: string; token: string }
 
 export default function AdminCreateArtwork() {
   const [loading, setLoading] = useState(false)
@@ -20,18 +20,20 @@ export default function AdminCreateArtwork() {
     // Checkbox & Währung normalisieren
     const availableInput = formEl.elements.namedItem("available") as HTMLInputElement | null
     fd.set("available", availableInput?.checked ? "true" : "false")
+
     const currencyInput = formEl.elements.namedItem("currency") as HTMLInputElement | null
     if (currencyInput?.value) fd.set("currency", currencyInput.value.toUpperCase())
 
     // Dateien einsammeln
     const imagesInput = formEl.elements.namedItem("images") as HTMLInputElement | null
-    const files = imagesInput?.files ? Array.from(imagesInput.files).filter((f) => f && f.size > 0) : []
+    const files = imagesInput?.files ? Array.from(imagesInput.files).filter(f => f && f.size > 0) : []
 
     try {
-      // 1) Signed Upload URLs holen
+      // 1) Signed Tokens vom Server holen (KEINE PUT-URL!)
       let publicUrls: string[] = []
+
       if (files.length) {
-        const meta = files.map((f) => ({ name: f.name, type: f.type }))
+        const meta = files.map(f => ({ name: f.name, type: f.type }))
         const signRes = await fetch("/admin/storage/signed-upload", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -42,31 +44,26 @@ export default function AdminCreateArtwork() {
 
         const uploads: SignedUpload[] = signJson.uploads || []
         if (uploads.length !== files.length) throw new Error("Upload tokens mismatch")
+        console.log("Signed uploads:", uploads) // Debug: sollte {path, token} zeigen
 
-        // 2) Dateien via PUT direkt hochladen
+        // 2) Hochladen via uploadToSignedUrl(path, token, file)
+        const bucket = supabaseClient.storage.from("artworks")
         for (let i = 0; i < files.length; i++) {
           const file = files[i]
-          const { path, uploadUrl } = uploads[i]
+          const { path, token } = uploads[i]
 
-          const put = await fetch(uploadUrl, {
-            method: "PUT",
-            headers: {
-              "content-type": file.type || "application/octet-stream",
-            },
-            body: file,
+          const { error: upErr } = await bucket.uploadToSignedUrl(path, token, file, {
+            contentType: file.type || "application/octet-stream",
+            upsert: false,
           })
-          if (!put.ok) {
-            const t = await put.text().catch(() => "")
-            throw new Error(`Upload failed (${put.status}) ${t}`)
-          }
+          if (upErr) throw new Error(`[uploadToSignedUrl] ${upErr.message}`)
 
-          // 3) Öffentliche URL holen
-          const { data: pub } = supabaseClient.storage.from("artworks").getPublicUrl(path)
+          const { data: pub } = bucket.getPublicUrl(path)
           if (pub?.publicUrl) publicUrls.push(pub.publicUrl)
         }
       }
 
-      // 4) Metadaten + Bild-URLs speichern
+      // 3) Metadaten + Bild-URLs speichern (wie gehabt)
       const metaForm = new FormData()
       metaForm.set("title", String(fd.get("title") || ""))
       metaForm.set("description", String(fd.get("description") || ""))
@@ -81,7 +78,9 @@ export default function AdminCreateArtwork() {
       let json: any = null
       try { json = JSON.parse(text) } catch {}
       if (!saveRes.ok) {
-        throw new Error((json && (json.error || json.details || json.hint)) || text || "Fehler beim Speichern")
+        throw new Error(
+          (json && (json.error || json.details || json.hint)) || text || "Fehler beim Speichern"
+        )
       }
 
       setMessage("Gespeichert 🎉")
@@ -97,7 +96,7 @@ export default function AdminCreateArtwork() {
     <main className="mx-auto max-w-2xl p-6">
       <h1 className="mb-6 text-3xl font-light">Neues Artwork anlegen</h1>
 
-      <form onSubmit={onSubmit} className="space-y-4">
+      <form onSubmit={onSubmit} className="space-y-4" encType="multipart/form-data">
         <div className="grid gap-4">
           <label className="block">
             <span className="text-sm text-gray-700">Titel</span>
