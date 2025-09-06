@@ -32,7 +32,7 @@ export default function AdminCreateArtwork() {
       let publicUrls: string[] = []
       if (files.length) {
         const meta = files.map((f) => ({ name: f.name, type: f.type }))
-        const signRes = await fetch("/api/admin/storage/signed-upload", {
+        const signRes = await fetch("/admin/storage/signed-upload", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ files: meta }),
