@@ -339,19 +339,19 @@ function ArtworkCard({ artwork, onZoom }: { artwork: Artwork; onZoom: (src: stri
             <div>
               <h2 className="mb-6 text-4xl font-light text-gray-800">Über die Künstlerin</h2>
               <div className="space-y-4 leading-relaxed text-gray-600">
-                <p>
-                  Ich bin <strong>Selina („Lina“) Sickinger</strong> und arbeite mit Schichtungen aus Acrylfarben und
-                  Texturen, um Tiefe, Bewegung und Harmonie zu erzeugen. Jedes Bild entsteht intuitiv als Antwort auf
-                  Gefühl und Moment.
+                <p> Hi, ich bin  <strong>Selina</strong> – die Künstlerin hinter linasoul.art! 
+Ich nehme euch mit auf die Reise durch meine kreative Welt der abstrakten Kunst. Wenn ihr euch für einzigartige Acrylbilder, moderne Leinwandkunst und zeitlose Interior Art begeistern könnt, dann seid ihr hier genau richtig!
                 </p>
                 <p>
-                  Meine <em>abstrakte Acrylmalerei</em> verbindet reduzierte Farbwelten mit organischen Strukturen – für
-                  Kunstwerke, die Räume tragen und die Seele berühren.
+Ich male aus Leidenschaft, weil es mir unglaublich Spaß macht und ich es liebe, Menschen mit meiner Kunst zu inspirieren und ihre Räume mit Ausdruck und Emotion zu füllen.
+                </p>
+                <p>
+                  Ich bin Perfektionistin durch und durch. Am Anfang war genau das meine größte Challenge: loslassen. Durch das Malen habe ich gelernt, dass Perfektionismus absolut im Auge des Betrachters liegt – und genau darin liegt für mich die Magie der abstrakten Malerei.
                 </p>
               </div>
               <div className="mt-8 flex items-center space-x-4">
                 <Heart className="h-5 w-5 text-taupe-400" />
-                <span className="text-gray-600">Creating art that touches the soul</span>
+                <span className="text-gray-600">Every canvas tells a story</span>
               </div>
             </div>
             <div className="relative">
