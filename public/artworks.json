@@ -1,0 +1,26 @@
+[  
+  {  
+    "title": "Starry Night",  
+    "artist": "Vincent van Gogh",  
+    "year": "1889",  
+    "medium": "Oil on canvas",  
+    "dimensions": {  
+      "width": "73.7 cm",  
+      "height": "92.1 cm"  
+    },  
+    "description": "A depiction of a night sky filled with swirling clouds, stars, and a bright crescent moon set over a quiet town.",  
+    "image_url": "https://example.com/starry_night.jpg"  
+  },  
+  {  
+    "title": "The Persistence of Memory",  
+    "artist": "Salvador Dalí",  
+    "year": "1931",  
+    "medium": "Oil on canvas",  
+    "dimensions": {  
+      "width": "24 cm",  
+      "height": "33 cm"  
+    },  
+    "description": "A surrealist painting illustrating melting clocks in a dream-like landscape, symbolizing the relativity of time.",  
+    "image_url": "https://example.com/persistence_of_memory.jpg"  
+  }  
+]
