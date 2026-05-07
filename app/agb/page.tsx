@@ -66,8 +66,8 @@ export default function AgbPage() {
         <section>
           <h2 className="font-semibold">6. Zahlung</h2>
           <p>
-            Zahlung per <strong>Stripe</strong> (z. B. Kreditkarte, SEPA-Lastschrift) oder <strong>Banküberweisung</strong>.
-            Verfügbare Optionen werden im Checkout angezeigt.
+            Die Zahlung erfolgt derzeit nicht über einen automatischen Checkout. Bitte kontaktieren Sie uns direkt per E-Mail,
+            um die Zahlungsabwicklung persönlich abzustimmen.
           </p>
         </section>
 

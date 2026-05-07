@@ -23,14 +23,10 @@ export default function DatenschutzPage() {
         des Vertrags oder zur Bearbeitung Ihrer Anfrage.
       </p>
 
-      <h2 className="mt-8 mb-2 text-xl font-semibold">3. Zahlungsanbieter Stripe</h2>
+      <h2 className="mt-8 mb-2 text-xl font-semibold">3. Zahlungsabwicklung</h2>
       <p className="mb-4">
-        Bei Zahlungen über unseren Shop nutzen wir den Zahlungsanbieter Stripe. Die Datenverarbeitung 
-        durch Stripe erfolgt auf Grundlage von Art. 6 Abs. 1 lit. b DSGVO (Vertragsabwicklung). 
-        Weitere Informationen finden Sie in der Datenschutzerklärung von Stripe:{" "}
-        <a href="https://stripe.com/de/privacy" target="_blank" rel="noopener noreferrer" className="underline">
-          https://stripe.com/de/privacy
-        </a>
+        Zahlungen über diesen Shop werden derzeit nicht über eingebundene Zahlungsdienstleister verarbeitet.
+        Für Bestellungen kontaktieren Sie uns bitte direkt per E-Mail.
       </p>
 
       <h2 className="mt-8 mb-2 text-xl font-semibold">4. Web-Analyse mit Vercel Analytics</h2>

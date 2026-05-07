@@ -11,7 +11,7 @@ import { track } from "@vercel/analytics";
 function SuccessContent() {
   const { clear } = useCart();
   const params = useSearchParams();
-  const sessionId = params.get("session_id"); // falls Stripe die Session-ID zurückgibt
+  const sessionId = params.get("session_id"); // optionaler Bestellcode
 
   useEffect(() => {
     // Analytics: Kauf abgeschlossen

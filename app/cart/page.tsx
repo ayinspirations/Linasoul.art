@@ -60,37 +60,9 @@ export default function CartPage() {
   }, [])
 
   async function checkout() {
-    if (!agb || !widerruf || !versand) return
-    setBusy(true)
-
-    // --- Analytics: Checkout Button geklickt ---
-    track("Checkout Clicked", {
-      items: items.length,
-      total_eur: (totalCents || 0) / 100,
-    })
-
-    try {
-      // NUR IDs senden – deine /api/checkout erwartet string[]
-      const res = await fetch("/api/checkout", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ items: items.map(i => i.id) }),
-      })
-      const json = await res.json()
-      if (!res.ok) throw new Error(json?.error || "Checkout fehlgeschlagen")
-
-      // --- Analytics: Checkout wird gestartet (vor Redirect) ---
-      track("Checkout Initiated", {
-        items: items.length,
-        total_eur: (totalCents || 0) / 100,
-      })
-
-      window.location.href = json.url
-    } catch (e) {
-      alert((e as Error).message)
-    } finally {
-      setBusy(false)
-    }
+    alert(
+      "Checkout ist derzeit deaktiviert. Bitte kontaktiere linasoul.art@gmx.de für Bestellungen."
+    )
   }
 
   return (
@@ -273,9 +245,9 @@ export default function CartPage() {
                 <Button
                   className="w-full bg-[#f9f5ec] text-gray-800 hover:bg-[#f2e8dc]"
                   onClick={checkout}
-                  disabled={items.length === 0 || !agb || !widerruf || !versand || busy}
+                  disabled={items.length === 0 || busy}
                 >
-                  {busy ? "Weiter zur Kasse …" : "Zur Kasse"}
+                  {busy ? "Weiter zur Kasse …" : "Kaufanfrage senden"}
                 </Button>
 
                 {items.length > 0 && (
