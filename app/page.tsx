@@ -1,35 +1,47 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
-import { Heart, Palette, ChevronLeft, ChevronRight, X } from "lucide-react"
+import { Heart, Palette, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
-import { Badge } from "@/components/ui/badge"
 import { track } from "@vercel/analytics"
-import { useCart } from "./cart/CartProvider"
 
 // ---------- Types ----------
-type Artwork = {
+type GalleryImage = {
   id: string
-  title: string
-  description?: string
-  price_cents: number
-  currency: string
-  available: boolean
-  images: string[]
-  size?: string
+  src: string
+  name: string
 }
+
+const galleryQuotes = [
+  {
+    text: "Kunst wäscht den Staub des Alltags von der Seele.",
+    author: "Pablo Picasso",
+  },
+  {
+    text: "Das Geheimnis der Kunst liegt darin, dass man nicht weiß, was man tut.",
+    author: "Johann Wolfgang von Goethe",
+  },
+  {
+    text: "Jedes Kind ist ein Künstler. Das Problem ist, es auch als Erwachsener zu bleiben.",
+    author: "Pablo Picasso",
+  },
+  {
+    text: "Schönheit liegt im Auge des Betrachters.",
+    author: "Margaret Hungerford",
+  },
+]
 
 export default function LinasoulPortfolio() {
   // Zoom-Lightbox
   const [zoomSrc, setZoomSrc] = useState<string | null>(null)
   const [zoomLevel, setZoomLevel] = useState(1)
 
-  // Artworks aus API
-  const [artworks, setArtworks] = useState<Artwork[]>([])
+  // Galeriebilder aus public/gallery
+  const [galleryImages, setGalleryImages] = useState<GalleryImage[]>([])
 
   // ESC schließt Zoom
   useEffect(() => {
@@ -64,56 +76,45 @@ export default function LinasoulPortfolio() {
   useEffect(() => {
     async function load() {
       try {
-        const res = await fetch("/api/artworks", { cache: "no-store" })
+        const res = await fetch("/api/gallery", { cache: "no-store" })
         const json = await res.json()
-        const arr = Array.isArray(json?.artworks) ? json.artworks : []
+        const arr = Array.isArray(json?.images) ? json.images : []
 
-        const safe: Artwork[] = arr.map((a: any) => {
-          // images robust normalisieren
-          let imgs: string[] = []
-          try {
-            if (Array.isArray(a?.images)) {
-              imgs = a.images.map(String)
-            } else if (typeof a?.images === "string") {
-              try {
-                const parsed = JSON.parse(a.images)
-                imgs = Array.isArray(parsed) ? parsed.map(String) : [String(a.images)]
-              } catch {
-                imgs = [String(a.images)]
-              }
-            } else if (a?.images && typeof a.images === "object" && typeof a.images.url === "string") {
-              imgs = [String(a.images.url)]
-            }
-          } catch {
-            imgs = []
-          }
-          imgs = (imgs || []).filter((u) => typeof u === "string" && u.trim().length > 0)
+        const safe: GalleryImage[] = arr.map((src: string, index: number) => ({
+          id: `gallery-${index}`,
+          src,
+          name: src.split("/").pop() || `Bild ${index + 1}`,
+        }))
 
-          return {
-            id: String(
-              a.id ??
-                (typeof crypto !== "undefined" && "randomUUID" in crypto
-                  ? crypto.randomUUID()
-                  : Date.now().toString())
-            ),
-            title: String(a.title ?? "Untitled"),
-            description: a.description ?? "",
-            price_cents: Number(a.price_cents ?? 0),
-            currency: String(a.currency ?? "eur"),
-            available: Boolean(a.available ?? false),
-            size: a.size ? String(a.size) : "",
-            images: imgs,
-          }
-        })
-
-        setArtworks(safe)
+        setGalleryImages(safe)
       } catch (e) {
         console.error(e)
-        setArtworks([])
+        setGalleryImages([])
       }
     }
     load()
   }, [])
+
+  const galleryItems = galleryImages.flatMap((image, index) => {
+    const items = [
+      <GalleryTile
+        key={image.id}
+        image={image}
+        index={index}
+        onZoom={(src) => {
+          setZoomSrc(src)
+          setZoomLevel(1)
+        }}
+      />,
+    ]
+
+    if ([1, 4, 8].includes(index)) {
+      const quote = galleryQuotes[index % galleryQuotes.length]
+      items.push(<GalleryQuote key={`quote-${index}`} quote={quote} />)
+    }
+
+    return items
+  })
 
   // ---------- Beschreibung mit Mehr/Weniger ----------
   function ArtworkDescription({ text }: { text: string }) {
@@ -138,137 +139,66 @@ export default function LinasoulPortfolio() {
 // ---------- Einzelkarte mit smooth Crossfade (ohne Flash, mobil-freundlich) ----------
 // ---------- Einzelkarte mit decode-Preload (kein Flash, mobil-sicher) ----------
 // ---------- Einzelkarte mit sofortigem Wechsel + Crossfade ----------
-function ArtworkCard({ artwork, onZoom }: { artwork: Artwork; onZoom: (src: string) => void }) {
-  const [currentIdx, setCurrentIdx] = useState(0)
-  const [overlaySrc, setOverlaySrc] = useState<string | null>(null)
-  const { add } = useCart()
+function GalleryTile({ image, onZoom, index }: { image: GalleryImage; onZoom: (src: string) => void; index: number }) {
+  const [inView, setInView] = useState(false)
+  const tileRef = useRef<HTMLDivElement | null>(null)
 
-  const images = (artwork.images || []).filter((u) => typeof u === "string" && u.trim().length > 0)
-  const total = images.length
-  const hasMultiple = total > 1
+  useEffect(() => {
+    if (!tileRef.current) return
+    const element = tileRef.current
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        setInView(entry.isIntersecting)
+      },
+      { threshold: 0.3 }
+    )
+    observer.observe(element)
+    return () => observer.disconnect()
+  }, [])
 
-  const priceFmt = new Intl.NumberFormat("de-DE", {
-    style: "currency",
-    currency: (artwork.currency || "eur").toUpperCase(),
-  }).format((artwork.price_cents ?? 0) / 100)
+  const imageSrc = image.src || "/placeholder.svg"
 
-  const currentSrc = images[currentIdx] || "/placeholder.svg"
+  const spanClasses = [
+    "md:col-span-7 md:row-span-2",
+    "md:col-span-5 md:row-span-1",
+    "md:col-span-5 md:row-span-1",
+    "md:col-span-7 md:row-span-2",
+    "md:col-span-4 md:row-span-1",
+    "md:col-span-8 md:row-span-1",
+  ]
 
-  // Navigation: sofort Overlay setzen, danach Index umstellen
-  const go = (dir: "prev" | "next") => {
-    if (!hasMultiple) return
-    const target =
-      dir === "next"
-        ? (currentIdx + 1) % total
-        : (currentIdx - 1 + total) % total
-
-    const targetSrc = images[target]
-    if (!targetSrc) return
-
-    setOverlaySrc(targetSrc)
-    // nach dem Fade-In das aktuelle Bild setzen
-    setTimeout(() => {
-      setCurrentIdx(target)
-      setOverlaySrc(null)
-    }, 300) // Dauer der CSS-Transition
-  }
+  const tileClass = spanClasses[index % spanClasses.length]
 
   return (
-    <Card className="group overflow-hidden border-0 shadow-lg transition-all duration-300 hover:shadow-2xl">
-      <div className="relative aspect-[3/4] overflow-hidden bg-[#f7f5f1]">
-        {/* aktuelles Bild */}
+    <div
+      ref={tileRef}
+      className={`group relative overflow-hidden rounded-[2.5rem] bg-slate-950/5 shadow-[0_40px_120px_rgba(15,23,42,0.08)] transition duration-1000 ${tileClass}`}
+      style={{ transform: inView ? "scale(1.02)" : "scale(0.98)" }}
+    >
+      <button
+        type="button"
+        onClick={() => onZoom(imageSrc)}
+        className="relative block h-full w-full cursor-zoom-in"
+        aria-label={`Zoom ${image.name}`}
+      >
         <img
-          src={currentSrc}
-          alt={`${artwork.title} – Acrylbild von Selina („Lina“) Sickinger`}
-          className="absolute inset-0 h-full w-full object-cover cursor-zoom-in transition-transform duration-300 group-hover:scale-105"
-          onClick={() => onZoom(currentSrc)}
+          src={imageSrc}
+          alt={image.name}
+          className="h-full w-full object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
+          loading="lazy"
         />
+        <div className="pointer-events-none absolute inset-0 rounded-[2.5rem] bg-gradient-to-t from-slate-950/20 via-transparent to-transparent" />
+      </button>
+    </div>
+  )
+}
 
-        {/* Overlay-Bild für Crossfade */}
-        {overlaySrc && (
-          <img
-            src={overlaySrc}
-            alt=""
-            className="absolute inset-0 h-full w-full object-cover opacity-0 animate-fadeIn"
-            onClick={() => onZoom(overlaySrc)}
-          />
-        )}
-
-        {/* Navigation */}
-        {hasMultiple && (
-          <>
-            <button
-              aria-label="Vorheriges Bild"
-              onClick={(e) => {
-                e.stopPropagation()
-                go("prev")
-              }}
-              className="absolute left-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow hover:bg-white"
-            >
-              <ChevronLeft className="h-5 w-5 text-gray-700" />
-            </button>
-            <button
-              aria-label="Nächstes Bild"
-              onClick={(e) => {
-                e.stopPropagation()
-                go("next")
-              }}
-              className="absolute right-2 top-1/2 -translate-y-1/2 rounded-full bg-white/80 p-2 shadow hover:bg-white"
-            >
-              <ChevronRight className="h-5 w-5 text-gray-700" />
-            </button>
-          </>
-        )}
-      </div>
-
-      {/* Rest wie gehabt */}
-      <CardContent className="p-6">
-        <div className="mb-2 flex items-start justify-between">
-          <h3 className="text-xl font-medium text-gray-800">{artwork.title}</h3>
-          <Badge
-            variant={artwork.available ? "default" : "secondary"}
-            className="ml-2"
-          >
-            {artwork.available ? "Verfügbar" : "Nicht verfügbar"}
-          </Badge>
-        </div>
-
-        {artwork.size ? <p className="mb-1 text-sm text-gray-500">{artwork.size}</p> : null}
-        {artwork.description ? <ArtworkDescription text={artwork.description} /> : null}
-
-        <div className="flex items-center justify-between">
-          {artwork.available ? (
-            <span className="text-lg font-medium text-black">{priceFmt}</span>
-          ) : (
-            <span aria-hidden className="inline-block" />
-          )}
-
-          {artwork.available ? (
-            <Button
-              size="sm"
-              className="bg-[#f9f5ec] text-gray-800 hover:bg-[#f2e8dc]"
-              onClick={() => {
-                track("Add to Cart", {
-                  artwork_id: artwork.id,
-                  price_eur: (artwork.price_cents ?? 0) / 100,
-                })
-                add({
-                  id: artwork.id,
-                  title: artwork.title,
-                  price_cents: artwork.price_cents ?? 0,
-                  currency: artwork.currency || "eur",
-                  image: images[0] ?? null,
-                })
-              }}
-            >
-              In den Warenkorb
-            </Button>
-          ) : (
-            <span className="text-sm text-gray-500">Nicht verfügbar</span>
-          )}
-        </div>
-      </CardContent>
-    </Card>
+function GalleryQuote({ quote }: { quote: { text: string; author: string } }) {
+  return (
+    <div className="col-span-1 md:col-span-12 lg:col-span-8 rounded-[2.5rem] border border-slate-200/60 bg-white/90 p-10 text-center shadow-[0_30px_90px_rgba(15,23,42,0.06)]">
+      <p className="mb-6 text-xl italic text-slate-800 sm:text-2xl">“{quote.text}”</p>
+      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">{quote.author}</p>
+    </div>
   )
 }
 
@@ -308,10 +238,8 @@ function ArtworkCard({ artwork, onZoom }: { artwork: Artwork; onZoom: (src: stri
 
           {/* Einleitung – mobil etwas kleiner, Desktop größer; moderater Abstand vor CTA */}
           <p className="mx-auto mb-6 sm:mb-8 max-w-2xl text-base sm:text-lg leading-relaxed text-gray-700 drop-shadow-md">
-            Willkommen bei <strong>Linasoul Art</strong>. Ich bin Selina („Lina“) Sickinger und male{" "}
-            <em>abstrakte Acrylgemälde</em>, die Emotionen sichtbar machen: ruhige Naturtöne, kraftvolle
-            Strukturen und moderne Kompositionen für Zuhause oder Büro. Entdecke originale{" "}
-            <strong>abstrakte Bilder</strong> auf Leinwand – jedes Werk ist handgemalt und ein Unikat.
+            Abstrakte Acrylmalerei. Farbenfrohe Werke, hochwertige Materialien und eine Menge Leidenschaft.
+            Jedes Bild ein Unikat – und jedes erzählt seine eigene Geschichte.
           </p>
 
           {/* CTA */}
@@ -339,14 +267,19 @@ function ArtworkCard({ artwork, onZoom }: { artwork: Artwork; onZoom: (src: stri
             <div>
               <h2 className="mb-6 text-4xl font-light text-gray-800">Über die Künstlerin</h2>
               <div className="space-y-4 leading-relaxed text-gray-600">
-                <p> Hi, ich bin  <strong>Selina</strong> – die Künstlerin hinter linasoul.art! 
-Ich nehme euch mit auf die Reise durch meine kreative Welt der abstrakten Kunst. Wenn ihr euch für einzigartige Acrylbilder, moderne Leinwandkunst und zeitlose Interior Art begeistern könnt, dann seid ihr hier genau richtig!
+                  <p>
+                  Ich bin Selina – und ich male aus Leidenschaft.
                 </p>
                 <p>
-Ich male aus Leidenschaft, weil es mir unglaublich Spaß macht und ich es liebe, Menschen mit meiner Kunst zu inspirieren und ihre Räume mit Ausdruck und Emotion zu füllen.
+                  Abstrakte Acrylbilder auf Leinwand. Mal knallig, mal ruhig. Immer handgemacht, immer ein Unikat.
+                  Jedes Werk entsteht von Grund auf in meinen Händen – vom Rahmen, den ich selbst baue und bespanne,
+                  bis zum finalen Schattenfugenrahmen, der ein Bild für mich erst wirklich fertig macht.
                 </p>
                 <p>
-                  Ich bin Perfektionistin durch und durch. Am Anfang war genau das meine größte Challenge: loslassen. Durch das Malen habe ich gelernt, dass Perfektionismus absolut im Auge des Betrachters liegt – und genau darin liegt für mich die Magie der abstrakten Malerei.
+                  Ich war schon immer kreativ. Aber die abstrakte Malerei hat mich auf eine ganz eigene Art erwischt –
+                  weil sie mich gelehrt hat loszulassen. Als Perfektionistin war das meine größte Challenge.
+                  Und genau darin liegt für mich die Magie: Ein Bild ist nie „perfekt”. Es liegt im Auge des
+                  Betrachters. Und das ist das Schönste daran.
                 </p>
               </div>
               <div className="mt-8 flex items-center space-x-4">
@@ -388,17 +321,15 @@ Ich male aus Leidenschaft, weil es mir unglaublich Spaß macht und ich es liebe,
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-8 md:grid-cols-2 lg:grid-cols-3">
-            {artworks.map((artwork) => (
-              <ArtworkCard
-                key={artwork.id}
-                artwork={artwork}
-                onZoom={(src) => {
-                  setZoomSrc(src)
-                  setZoomLevel(1)
-                }}
-              />
-            ))}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-12 md:auto-rows-[20rem]">
+            {galleryItems.length ? (
+              galleryItems
+            ) : (
+              <div className="col-span-1 md:col-span-12 rounded-[2.5rem] border border-dashed border-slate-300 bg-white/70 p-16 text-center text-slate-500">
+                Lade deine Bilder in <code className="rounded bg-slate-100 px-2 py-1 text-sm">public/gallery/</code> hoch.
+                Der Code erkennt sie automatisch und zeigt sie hier an.
+              </div>
+            )}
           </div>
         </div>
       </section>
