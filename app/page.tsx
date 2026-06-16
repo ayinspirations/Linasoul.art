@@ -136,54 +136,66 @@ export default function LinasoulPortfolio() {
     load()
   }, [])
 
-  // Pattern: per 5-row cycle, 8 image slots + 2 quote slots
-  // [colStart/colEnd (1-indexed, out of 10), height, isQuote]
-  const GRID_PATTERN: { col: string; height: string; isQuote: boolean }[] = [
-    { col: "1 / 5",  height: "16rem", isQuote: false }, // row1 left 40%
-    { col: "5 / 11", height: "16rem", isQuote: false }, // row1 right 60%
-    { col: "1 / 5",  height: "22rem", isQuote: false }, // row2 left 40%
-    { col: "5 / 11", height: "22rem", isQuote: true  }, // row2 right 60% QUOTE
-    { col: "1 / 7",  height: "18rem", isQuote: false }, // row3 left 60%
-    { col: "7 / 11", height: "18rem", isQuote: false }, // row3 right 40%
-    { col: "1 / 5",  height: "18rem", isQuote: true  }, // row4 left 40% QUOTE
-    { col: "5 / 11", height: "18rem", isQuote: false }, // row4 right 60%
-    { col: "1 / 5",  height: "16rem", isQuote: false }, // row5 left 40%
-    { col: "5 / 11", height: "16rem", isQuote: false }, // row5 right 60%
+  // Row-based pattern: each entry = [leftCell, rightCell]
+  // isQuote=true → always renders a quote; isQuote=false → renders image or quote if no image left
+  const ROW_PATTERN: [
+    { col: string; height: string; isQuote: boolean },
+    { col: string; height: string; isQuote: boolean }
+  ][] = [
+    // Block A row 1: small left 40%, large right 60%
+    [{ col: "1 / 5", height: "16rem", isQuote: false }, { col: "5 / 11", height: "16rem", isQuote: false }],
+    // Block A row 2: portrait left 40%, QUOTE right 60%
+    [{ col: "1 / 5", height: "22rem", isQuote: false }, { col: "5 / 11", height: "22rem", isQuote: true }],
+    // Block B row 3: large left 60%, square right 40%
+    [{ col: "1 / 7", height: "18rem", isQuote: false }, { col: "7 / 11", height: "18rem", isQuote: false }],
+    // Block B row 4: QUOTE left 40%, large right 60%
+    [{ col: "1 / 5", height: "18rem", isQuote: true },  { col: "5 / 11", height: "18rem", isQuote: false }],
+    // Block C row 5: square left 40%, large right 60%
+    [{ col: "1 / 5", height: "16rem", isQuote: false }, { col: "5 / 11", height: "16rem", isQuote: false }],
   ]
 
   const galleryItems = (() => {
     const items: React.ReactElement[] = []
     let imgIdx = 0
     let quoteIdx = 0
-    let slotIdx = 0
+    let rowCycle = 0
 
     while (imgIdx < galleryImages.length) {
-      const slot = GRID_PATTERN[slotIdx % GRID_PATTERN.length]
-      if (slot.isQuote) {
+      const [left, right] = ROW_PATTERN[rowCycle % ROW_PATTERN.length]
+
+      const renderSlot = (slot: typeof left, key: string) => {
+        if (slot.isQuote) {
+          const quote = galleryQuotes[quoteIdx % galleryQuotes.length]
+          quoteIdx++
+          return (
+            <GalleryQuote key={key} quote={quote} col={slot.col} height={slot.height} />
+          )
+        }
+        if (imgIdx < galleryImages.length) {
+          const image = galleryImages[imgIdx++]
+          return (
+            <GalleryTile
+              key={image.id}
+              image={image}
+              col={slot.col}
+              height={slot.height}
+              onZoom={(src) => { setZoomSrc(src); setZoomLevel(1) }}
+            />
+          )
+        }
+        // No image left for this slot → fill with a quote
         const quote = galleryQuotes[quoteIdx % galleryQuotes.length]
-        items.push(
-          <GalleryQuote
-            key={`quote-${quoteIdx}`}
-            quote={quote}
-            col={slot.col}
-            height={slot.height}
-          />
-        )
         quoteIdx++
-      } else {
-        const image = galleryImages[imgIdx]
-        items.push(
-          <GalleryTile
-            key={image.id}
-            image={image}
-            col={slot.col}
-            height={slot.height}
-            onZoom={(src) => { setZoomSrc(src); setZoomLevel(1) }}
-          />
-        )
-        imgIdx++
+        return <GalleryQuote key={key} quote={quote} col={slot.col} height={slot.height} />
       }
-      slotIdx++
+
+      items.push(renderSlot(left, `left-${rowCycle}`))
+      // Only render right cell if we still have content (images) OR right is a quote slot
+      if (right.isQuote || imgIdx < galleryImages.length) {
+        items.push(renderSlot(right, `right-${rowCycle}`))
+      }
+
+      rowCycle++
     }
     return items
   })()
