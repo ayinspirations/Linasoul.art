@@ -309,11 +309,11 @@ export default function LinasoulPortfolio() {
               {galleryRows.map((row, idx) => (
                 <div
                   key={idx}
-                  className="flex gap-3 sm:gap-4 scroll-hidden"
+                  className="flex flex-col sm:flex-row gap-3 sm:gap-4 scroll-hidden"
                   style={{ transitionDelay: `${idx * 0.1}s` }}
                 >
                   <div
-                    className={row.lImg ? "overflow-hidden rounded-3xl group cursor-zoom-in" : "flex flex-col items-center justify-center px-6 text-center rounded-3xl bg-slate-50/60"}
+                    className={row.lImg ? "overflow-hidden rounded-3xl group cursor-zoom-in gallery-cell" : "flex flex-col items-center justify-center px-6 text-center rounded-3xl bg-slate-50/60 gallery-cell"}
                     style={{ width: row.lw, height: row.h, flexShrink: 0 }}
                     onClick={row.lImg ? () => { setZoomSrc(row.lImg!.src); setZoomLevel(1) } : undefined}
                   >
@@ -327,7 +327,7 @@ export default function LinasoulPortfolio() {
                     ) : null}
                   </div>
                   <div
-                    className={row.rImg ? "overflow-hidden rounded-3xl group cursor-zoom-in" : "flex flex-col items-center justify-center px-6 text-center rounded-3xl bg-slate-50/60"}
+                    className={row.rImg ? "overflow-hidden rounded-3xl group cursor-zoom-in gallery-cell" : "flex flex-col items-center justify-center px-6 text-center rounded-3xl bg-slate-50/60 gallery-cell"}
                     style={{ flex: 1, height: row.h }}
                     onClick={row.rImg ? () => { setZoomSrc(row.rImg!.src); setZoomLevel(1) } : undefined}
                   >
