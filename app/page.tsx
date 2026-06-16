@@ -41,7 +41,7 @@ function GalleryTile({ image, onZoom, col, height }: { image: GalleryImage; onZo
   const imageSrc = image.src || "/placeholder.svg"
   return (
     <div
-      className="group relative overflow-hidden rounded-xl bg-slate-950/5 transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-[0_20px_60px_rgba(15,23,42,0.18)]"
+      className="group relative overflow-hidden rounded-3xl bg-slate-950/5 transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-[0_20px_60px_rgba(15,23,42,0.18)]"
       style={{ gridColumn: col, height }}
     >
       <button
@@ -56,7 +56,7 @@ function GalleryTile({ image, onZoom, col, height }: { image: GalleryImage; onZo
           className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
           loading="lazy"
         />
-        <div className="pointer-events-none absolute inset-0 rounded-xl bg-gradient-to-t from-slate-950/20 via-transparent to-transparent" />
+        <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-t from-slate-950/20 via-transparent to-transparent" />
       </button>
     </div>
   )
@@ -273,7 +273,7 @@ export default function LinasoulPortfolio() {
                 <div key={big.id} className="flex gap-3 sm:gap-4" style={{ alignItems: "stretch" }}>
                   {/* Left: large square tile */}
                   <div
-                    className="overflow-hidden rounded-xl"
+                    className="overflow-hidden rounded-3xl"
                     style={{ flex: 3, aspectRatio: "1 / 1", cursor: "zoom-in" }}
                     onClick={() => { setZoomSrc(big.src); setZoomLevel(1) }}
                   >
@@ -283,17 +283,17 @@ export default function LinasoulPortfolio() {
                   <div className="flex flex-col gap-3 sm:gap-4" style={{ flex: 2, minHeight: 0 }}>
                     {small ? (
                       <div
-                        className="overflow-hidden rounded-xl"
+                        className="overflow-hidden rounded-3xl"
                         style={{ flex: 3, minHeight: 0, cursor: "zoom-in" }}
                         onClick={() => { setZoomSrc(small.src); setZoomLevel(1) }}
                       >
                         <img src={small.src} alt={small.name} className="h-full w-full object-cover" loading="lazy" />
                       </div>
                     ) : (
-                      <div className="rounded-xl bg-slate-50" style={{ flex: 3, minHeight: 0 }} />
+                      <div className="rounded-3xl bg-slate-50" style={{ flex: 3, minHeight: 0 }} />
                     )}
                     <div
-                      className="flex flex-col items-center justify-center rounded-xl px-4 text-center"
+                      className="flex flex-col items-center justify-center rounded-3xl px-4 text-center"
                       style={{ flex: 2, minHeight: 0 }}
                     >
                       <p className="font-serif text-sm italic leading-relaxed text-slate-500 sm:text-base">
@@ -376,7 +376,7 @@ export default function LinasoulPortfolio() {
             <img
               src={zoomSrc!}
               alt="Zoomed artwork"
-              className="mx-auto block rounded-xl shadow-2xl"
+              className="mx-auto block rounded-3xl shadow-2xl"
               style={{
                 maxHeight: "90vh",
                 maxWidth: "90vw",
