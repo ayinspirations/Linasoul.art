@@ -210,16 +210,16 @@ export default function LinasoulPortfolio() {
             width={420}
             height={180}
             priority
-            className="mx-auto block h-auto w-48 sm:w-64 md:w-80 lg:w-[22rem] mb-1 sm:mb-2"
+            className="mx-auto block h-auto w-48 sm:w-64 md:w-80 lg:w-[22rem] mb-1 sm:mb-2 scroll-hidden"
           />
 
           {/* Headline – mobil 2xl/3xl, Desktop 4xl; enger zum Logo */}
-          <h1 className="mb-2 sm:mb-3 text-2xl sm:text-3xl md:text-4xl font-light text-gray-900">
+          <h1 className="mb-2 sm:mb-3 text-2xl sm:text-3xl md:text-4xl font-light text-gray-900 scroll-hidden" style={{ transitionDelay: "0.1s" }}>
             Abstrakte Acrylbilder von Lina – moderne Kunst auf Leinwand
           </h1>
 
           {/* Einleitung – mobil etwas kleiner, Desktop größer; moderater Abstand vor CTA */}
-          <p className="mx-auto mb-6 sm:mb-8 max-w-2xl text-base sm:text-lg leading-relaxed text-gray-700 drop-shadow-md">
+          <p className="mx-auto mb-6 sm:mb-8 max-w-2xl text-base sm:text-lg leading-relaxed text-gray-700 drop-shadow-md scroll-hidden" style={{ transitionDelay: "0.2s" }}>
             Abstrakte Acrylmalerei. Farbenfrohe Werke, hochwertige Materialien und eine Menge Leidenschaft.
             Jedes Bild ein Unikat – und jedes erzählt seine eigene Geschichte.
           </p>
@@ -227,7 +227,8 @@ export default function LinasoulPortfolio() {
           {/* CTA */}
           <Button
             size="lg"
-            className="rounded-full bg-[#f9f5ec] px-8 py-3 text-gray-800 shadow-lg hover:bg-[#f2e8dc]"
+            className="rounded-full bg-[#f9f5ec] px-8 py-3 text-gray-800 shadow-lg hover:bg-[#f2e8dc] scroll-hidden"
+            style={{ transitionDelay: "0.3s" }}
             onClick={() => {
               try {
                 // optionales Analytics-Event, falls @vercel/analytics eingebunden ist
@@ -246,7 +247,7 @@ export default function LinasoulPortfolio() {
       <section id="about" className="bg-white py-20">
         <div className="mx-auto max-w-6xl px-4 sm:px-6 lg:px-8">
           <div className="grid items-center gap-12 md:grid-cols-2">
-            <div>
+            <div className="scroll-hidden" style={{ transitionDelay: "0s" }}>
               <h2 className="mb-6 text-4xl font-light text-gray-800">Über die Künstlerin</h2>
               <div className="space-y-4 leading-relaxed text-gray-600">
                   <p>
@@ -269,7 +270,7 @@ export default function LinasoulPortfolio() {
                 <span className="text-gray-600">Every canvas tells a story</span>
               </div>
             </div>
-            <div className="relative">
+            <div className="relative scroll-hidden" style={{ transitionDelay: "0.15s" }}>
               <div className="aspect-square overflow-hidden rounded-2xl shadow-2xl">
                 <Image src="/images/lina-abstrakt-acrylmalerei-kuenstlerin.jpeg" alt="Lina im Atelier" width={1200} height={1200} className="object-cover object-[50%_70%]" />
               </div>
@@ -284,7 +285,7 @@ export default function LinasoulPortfolio() {
       {/* Galerie (direkt nach Hero) */}
       <section id="gallery" className="bg-gradient-to-br from-taupe-50 to-taupe-100 py-20">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-          <div className="mb-16 text-center">
+          <div className="mb-16 text-center scroll-hidden">
             <h2 className="mb-4 text-4xl font-light text-gray-800">Galerie</h2>
             <div className="mx-auto max-w-3xl space-y-4 text-lg leading-relaxed text-gray-600">
               <p>
@@ -354,12 +355,12 @@ export default function LinasoulPortfolio() {
       <section id="contact" className="bg-gradient-to-br from-taupe-50 to-blue-50 py-20">
         <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
           <div className="text-center">
-            <h2 className="mb-6 text-4xl font-light text-gray-800">Kontaktanfrage</h2>
-            <p className="mb-8 text-lg text-gray-600">
+            <h2 className="mb-6 text-4xl font-light text-gray-800 scroll-hidden">Kontaktanfrage</h2>
+            <p className="mb-8 text-lg text-gray-600 scroll-hidden" style={{ transitionDelay: "0.1s" }}>
               Hat eines meiner Werke dein Herz berührt? Ich freue mich auf deine Anfrage!
             </p>
 
-            <Card className="mx-auto max-w-md border-0 shadow-lg">
+            <Card className="mx-auto max-w-md border-0 shadow-lg scroll-hidden" style={{ transitionDelay: "0.2s" }}>
               <CardContent className="p-8">
                 <form action="mailto:linasoul.art@gmx.de" method="POST" encType="text/plain" className="space-y-6">
                   <div>
