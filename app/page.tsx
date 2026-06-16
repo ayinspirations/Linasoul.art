@@ -1,6 +1,6 @@
 "use client"
 
-import { useEffect, useRef, useState } from "react"
+import React, { useEffect, useState } from "react"
 import Image from "next/image"
 import { Heart, Palette, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
@@ -34,6 +34,47 @@ const galleryQuotes = [
     author: "Margaret Hungerford",
   },
 ]
+
+// ---------- Gallery components (module-level) ----------
+
+function GalleryTile({ image, onZoom, col, height }: { image: GalleryImage; onZoom: (src: string) => void; col: string; height: string }) {
+  const imageSrc = image.src || "/placeholder.svg"
+  return (
+    <div
+      className="group relative overflow-hidden rounded-xl bg-slate-950/5 transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-[0_20px_60px_rgba(15,23,42,0.18)]"
+      style={{ gridColumn: col, height }}
+    >
+      <button
+        type="button"
+        onClick={() => onZoom(imageSrc)}
+        className="relative block h-full w-full cursor-zoom-in"
+        aria-label={`Zoom ${image.name}`}
+      >
+        <img
+          src={imageSrc}
+          alt={image.name}
+          className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
+          loading="lazy"
+        />
+        <div className="pointer-events-none absolute inset-0 rounded-xl bg-gradient-to-t from-slate-950/20 via-transparent to-transparent" />
+      </button>
+    </div>
+  )
+}
+
+function GalleryQuote({ quote, col, height }: { quote: { text: string; author: string }; col: string; height: string }) {
+  return (
+    <div
+      className="flex flex-col items-center justify-center px-8 text-center"
+      style={{ gridColumn: col, height }}
+    >
+      <p className="mb-4 font-serif text-lg italic leading-relaxed text-slate-500 sm:text-xl">
+        {"„"}{quote.text}{"“"}
+      </p>
+      <p className="text-sm text-slate-400">{"–"} {quote.author}</p>
+    </div>
+  )
+}
 
 export default function LinasoulPortfolio() {
   // Zoom-Lightbox
@@ -95,112 +136,57 @@ export default function LinasoulPortfolio() {
     load()
   }, [])
 
-  const galleryItems = galleryImages.flatMap((image, index) => {
-    const items = [
-      <GalleryTile
-        key={image.id}
-        image={image}
-        index={index}
-        onZoom={(src) => {
-          setZoomSrc(src)
-          setZoomLevel(1)
-        }}
-      />,
-    ]
-
-    if ([1, 4, 8].includes(index)) {
-      const quote = galleryQuotes[index % galleryQuotes.length]
-      items.push(<GalleryQuote key={`quote-${index}`} quote={quote} />)
-    }
-
-    return items
-  })
-
-  // ---------- Beschreibung mit Mehr/Weniger ----------
-  function ArtworkDescription({ text }: { text: string }) {
-    const [expanded, setExpanded] = useState(false)
-    if (!text?.trim()) return null
-    return (
-      <div className="mb-3">
-        <p className={`text-gray-600 ${expanded ? "" : "line-clamp-1"}`}>{text}</p>
-        <button
-          type="button"
-          onClick={() => setExpanded((v) => !v)}
-          className="mt-1 text-sm text-gray-800 underline hover:text-gray-600"
-          aria-expanded={expanded}
-        >
-          {expanded ? "weniger" : "mehr"}
-        </button>
-      </div>
-    )
-  }
-
-  // ---------- Einzelkarte mit smooth Crossfade (ohne Flash, mobil-freundlich) ----------
-// ---------- Einzelkarte mit smooth Crossfade (ohne Flash, mobil-freundlich) ----------
-// ---------- Einzelkarte mit decode-Preload (kein Flash, mobil-sicher) ----------
-// ---------- Einzelkarte mit sofortigem Wechsel + Crossfade ----------
-function GalleryTile({ image, onZoom, index }: { image: GalleryImage; onZoom: (src: string) => void; index: number }) {
-  const [inView, setInView] = useState(false)
-  const tileRef = useRef<HTMLDivElement | null>(null)
-
-  useEffect(() => {
-    if (!tileRef.current) return
-    const element = tileRef.current
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        setInView(entry.isIntersecting)
-      },
-      { threshold: 0.3 }
-    )
-    observer.observe(element)
-    return () => observer.disconnect()
-  }, [])
-
-  const imageSrc = image.src || "/placeholder.svg"
-
-  const spanClasses = [
-    "md:col-span-7 md:row-span-2",
-    "md:col-span-5 md:row-span-1",
-    "md:col-span-5 md:row-span-1",
-    "md:col-span-7 md:row-span-2",
-    "md:col-span-4 md:row-span-1",
-    "md:col-span-8 md:row-span-1",
+  // Pattern: per 5-row cycle, 8 image slots + 2 quote slots
+  // [colStart/colEnd (1-indexed, out of 10), height, isQuote]
+  const GRID_PATTERN: { col: string; height: string; isQuote: boolean }[] = [
+    { col: "1 / 5",  height: "16rem", isQuote: false }, // row1 left 40%
+    { col: "5 / 11", height: "16rem", isQuote: false }, // row1 right 60%
+    { col: "1 / 5",  height: "22rem", isQuote: false }, // row2 left 40%
+    { col: "5 / 11", height: "22rem", isQuote: true  }, // row2 right 60% QUOTE
+    { col: "1 / 7",  height: "18rem", isQuote: false }, // row3 left 60%
+    { col: "7 / 11", height: "18rem", isQuote: false }, // row3 right 40%
+    { col: "1 / 5",  height: "18rem", isQuote: true  }, // row4 left 40% QUOTE
+    { col: "5 / 11", height: "18rem", isQuote: false }, // row4 right 60%
+    { col: "1 / 5",  height: "16rem", isQuote: false }, // row5 left 40%
+    { col: "5 / 11", height: "16rem", isQuote: false }, // row5 right 60%
   ]
 
-  const tileClass = spanClasses[index % spanClasses.length]
+  const galleryItems = (() => {
+    const items: React.ReactElement[] = []
+    let imgIdx = 0
+    let quoteIdx = 0
+    let slotIdx = 0
 
-  return (
-    <div
-      ref={tileRef}
-      className={`group relative overflow-hidden rounded-[2.5rem] bg-slate-950/5 shadow-[0_40px_120px_rgba(15,23,42,0.08)] transition duration-1000 ${tileClass}`}
-      style={{ transform: inView ? "scale(1.02)" : "scale(0.98)" }}
-    >
-      <button
-        type="button"
-        onClick={() => onZoom(imageSrc)}
-        className="relative block h-full w-full cursor-zoom-in"
-        aria-label={`Zoom ${image.name}`}
-      >
-        <img
-          src={imageSrc}
-          alt={image.name}
-          className="h-full w-full object-cover transition-transform duration-1000 ease-out group-hover:scale-105"
-          loading="lazy"
-        />
-        <div className="pointer-events-none absolute inset-0 rounded-[2.5rem] bg-gradient-to-t from-slate-950/20 via-transparent to-transparent" />
-      </button>
-    </div>
-  )
-}
-
-function GalleryQuote({ quote }: { quote: { text: string; author: string } }) {
-  return (
-    <div className="col-span-1 md:col-span-12 lg:col-span-8 rounded-[2.5rem] border border-slate-200/60 bg-white/90 p-10 text-center shadow-[0_30px_90px_rgba(15,23,42,0.06)]">
-      <p className="mb-6 text-xl italic text-slate-800 sm:text-2xl">“{quote.text}”</p>
-      <p className="text-sm font-semibold uppercase tracking-[0.2em] text-slate-500">{quote.author}</p>
-    </div>
-  )
-}
+    while (imgIdx < galleryImages.length) {
+      const slot = GRID_PATTERN[slotIdx % GRID_PATTERN.length]
+      if (slot.isQuote) {
+        const quote = galleryQuotes[quoteIdx % galleryQuotes.length]
+        items.push(
+          <GalleryQuote
+            key={`quote-${quoteIdx}`}
+            quote={quote}
+            col={slot.col}
+            height={slot.height}
+          />
+        )
+        quoteIdx++
+      } else {
+        const image = galleryImages[imgIdx]
+        items.push(
+          <GalleryTile
+            key={image.id}
+            image={image}
+            col={slot.col}
+            height={slot.height}
+            onZoom={(src) => { setZoomSrc(src); setZoomLevel(1) }}
+          />
+        )
+        imgIdx++
+      }
+      slotIdx++
+    }
+    return items
+  })()
 
   // ---------- Seite ----------
   return (
@@ -321,13 +307,46 @@ function GalleryQuote({ quote }: { quote: { text: string; author: string } }) {
             </div>
           </div>
 
-          <div className="grid grid-cols-1 gap-6 md:grid-cols-12 md:auto-rows-[20rem]">
-            {galleryItems.length ? (
-              galleryItems
-            ) : (
-              <div className="col-span-1 md:col-span-12 rounded-[2.5rem] border border-dashed border-slate-300 bg-white/70 p-16 text-center text-slate-500">
+          {/* Desktop: 10-col masonry grid with pattern */}
+          <div className="hidden md:grid gap-4" style={{ gridTemplateColumns: "repeat(10, 1fr)" }}>
+            {galleryItems.length ? galleryItems : (
+              <div style={{ gridColumn: "1 / 11" }} className="rounded-xl border border-dashed border-slate-300 bg-white/70 p-16 text-center text-slate-500">
                 Lade deine Bilder in <code className="rounded bg-slate-100 px-2 py-1 text-sm">public/gallery/</code> hoch.
-                Der Code erkennt sie automatisch und zeigt sie hier an.
+              </div>
+            )}
+          </div>
+
+          {/* Mobile: single column stack */}
+          <div className="flex flex-col gap-4 md:hidden">
+            {galleryImages.length ? (
+              galleryImages.map((image, i) => (
+                <div key={image.id}>
+                  <div
+                    className="group relative overflow-hidden rounded-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_20px_60px_rgba(15,23,42,0.18)]"
+                    style={{ height: "18rem" }}
+                  >
+                    <button
+                      type="button"
+                      onClick={() => { setZoomSrc(image.src); setZoomLevel(1) }}
+                      className="block h-full w-full cursor-zoom-in"
+                      aria-label={`Zoom ${image.name}`}
+                    >
+                      <img src={image.src} alt={image.name} className="h-full w-full object-cover" loading="lazy" />
+                    </button>
+                  </div>
+                  {(i + 1) % 3 === 0 && (
+                    <div className="py-8 text-center">
+                      <p className="font-serif italic text-slate-500 text-base leading-relaxed">
+                        „{galleryQuotes[Math.floor((i + 1) / 3) % galleryQuotes.length].text}"
+                      </p>
+                      <p className="mt-3 text-sm text-slate-400">– {galleryQuotes[Math.floor((i + 1) / 3) % galleryQuotes.length].author}</p>
+                    </div>
+                  )}
+                </div>
+              ))
+            ) : (
+              <div className="rounded-xl border border-dashed border-slate-300 bg-white/70 p-16 text-center text-slate-500">
+                Lade deine Bilder in <code className="rounded bg-slate-100 px-2 py-1 text-sm">public/gallery/</code> hoch.
               </div>
             )}
           </div>
