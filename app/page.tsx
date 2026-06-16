@@ -160,11 +160,11 @@ export default function LinasoulPortfolio() {
   const galleryRows = (() => {
     const rows = []
     const ROW_DEFS = [
-      { lw: "40%", rw: "60%", lk: "img",   rk: "img",   h: "15rem" },
-      { lw: "40%", rw: "60%", lk: "img",   rk: "quote", h: "18rem" },
-      { lw: "60%", rw: "40%", lk: "img",   rk: "img",   h: "15rem" },
-      { lw: "40%", rw: "60%", lk: "quote", rk: "img",   h: "18rem" },
-      { lw: "40%", rw: "60%", lk: "img",   rk: "img",   h: "15rem" },
+      { lw: "40%", rw: "60%", lk: "img",   rk: "img",   h: "22rem" },
+      { lw: "40%", rw: "60%", lk: "img",   rk: "quote", h: "28rem" },
+      { lw: "60%", rw: "40%", lk: "img",   rk: "img",   h: "26rem" },
+      { lw: "40%", rw: "60%", lk: "quote", rk: "img",   h: "26rem" },
+      { lw: "40%", rw: "60%", lk: "img",   rk: "img",   h: "26rem" },
     ]
     let imgIdx = 0
     let quoteIdx = 0
