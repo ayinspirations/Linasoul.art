@@ -20,6 +20,16 @@
   .scroll-visible { transition: none; }
 }
 
+/* Mobile gallery: full-width cells with square-ish aspect ratio */
+@media (max-width: 639px) {
+  .gallery-cell {
+    width: 100% !important;
+    height: auto !important;
+    aspect-ratio: 4 / 3;
+    flex-shrink: 0;
+  }
+}
+
 @font-face {
   font-family: 'Amsterdam Two';
   src: url('/fonts/amsterdamtwottf-ovmee.ttf') format('truetype');
