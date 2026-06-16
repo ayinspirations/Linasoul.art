@@ -136,68 +136,40 @@ export default function LinasoulPortfolio() {
     load()
   }, [])
 
-  // Row-based pattern: each entry = [leftCell, rightCell]
-  // isQuote=true → always renders a quote; isQuote=false → renders image or quote if no image left
-  const ROW_PATTERN: [
-    { col: string; height: string; isQuote: boolean },
-    { col: string; height: string; isQuote: boolean }
-  ][] = [
-    // Block A row 1: small left 40%, large right 60%
-    [{ col: "1 / 5", height: "16rem", isQuote: false }, { col: "5 / 11", height: "16rem", isQuote: false }],
-    // Block A row 2: portrait left 40%, QUOTE right 60%
-    [{ col: "1 / 5", height: "22rem", isQuote: false }, { col: "5 / 11", height: "22rem", isQuote: true }],
-    // Block B row 3: large left 60%, square right 40%
-    [{ col: "1 / 7", height: "18rem", isQuote: false }, { col: "7 / 11", height: "18rem", isQuote: false }],
-    // Block B row 4: QUOTE left 40%, large right 60%
-    [{ col: "1 / 5", height: "18rem", isQuote: true },  { col: "5 / 11", height: "18rem", isQuote: false }],
-    // Block C row 5: square left 40%, large right 60%
-    [{ col: "1 / 5", height: "16rem", isQuote: false }, { col: "5 / 11", height: "16rem", isQuote: false }],
-  ]
-
+  // Build bento blocks via React.createElement (avoids JSX-in-IIFE SWC bug)
   const galleryItems = (() => {
-    const items: React.ReactElement[] = []
-    let imgIdx = 0
-    let quoteIdx = 0
-    let rowCycle = 0
-
-    while (imgIdx < galleryImages.length) {
-      const [left, right] = ROW_PATTERN[rowCycle % ROW_PATTERN.length]
-
-      const renderSlot = (slot: typeof left, key: string) => {
-        if (slot.isQuote) {
-          const quote = galleryQuotes[quoteIdx % galleryQuotes.length]
-          quoteIdx++
-          return (
-            <GalleryQuote key={key} quote={quote} col={slot.col} height={slot.height} />
+    const blocks: React.ReactElement[] = []
+    let i = 0
+    let qi = 0
+    while (i < galleryImages.length) {
+      const big = galleryImages[i]
+      const small = galleryImages[i + 1]
+      const q = galleryQuotes[qi % galleryQuotes.length]
+      qi++
+      const imgStyle = { height: "100%", width: "100%", objectFit: "cover" as const }
+      const bigEl = React.createElement("div",
+        { style: { flex: 3, aspectRatio: "1 / 1", overflow: "hidden", borderRadius: "0.75rem", cursor: "zoom-in" }, onClick: () => { setZoomSrc(big.src); setZoomLevel(1) } },
+        React.createElement("img", { src: big.src, alt: big.name, style: imgStyle, loading: "lazy" as const })
+      )
+      const smallEl = small
+        ? React.createElement("div",
+            { style: { flex: 3, overflow: "hidden", borderRadius: "0.75rem", cursor: "zoom-in" }, onClick: () => { setZoomSrc(small.src); setZoomLevel(1) } },
+            React.createElement("img", { src: small.src, alt: small.name, style: imgStyle, loading: "lazy" as const })
           )
-        }
-        if (imgIdx < galleryImages.length) {
-          const image = galleryImages[imgIdx++]
-          return (
-            <GalleryTile
-              key={image.id}
-              image={image}
-              col={slot.col}
-              height={slot.height}
-              onZoom={(src) => { setZoomSrc(src); setZoomLevel(1) }}
-            />
-          )
-        }
-        // No image left for this slot → fill with a quote
-        const quote = galleryQuotes[quoteIdx % galleryQuotes.length]
-        quoteIdx++
-        return <GalleryQuote key={key} quote={quote} col={slot.col} height={slot.height} />
-      }
-
-      items.push(renderSlot(left, `left-${rowCycle}`))
-      // Only render right cell if we still have content (images) OR right is a quote slot
-      if (right.isQuote || imgIdx < galleryImages.length) {
-        items.push(renderSlot(right, `right-${rowCycle}`))
-      }
-
-      rowCycle++
+        : React.createElement("div", { style: { flex: 3, borderRadius: "0.75rem", background: "#f8fafc" } })
+      const quoteEl = React.createElement("div",
+        { style: { flex: 2, display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "center", textAlign: "center" as const, padding: "1rem" } },
+        React.createElement("p", { style: { fontFamily: "serif", fontStyle: "italic", fontSize: "0.9rem", lineHeight: 1.6, color: "#64748b" } }, "„" + q.text + "“"),
+        React.createElement("p", { style: { marginTop: "0.5rem", fontSize: "0.75rem", color: "#94a3b8" } }, "– " + q.author)
+      )
+      const rightCol = React.createElement("div",
+        { style: { flex: 2, display: "flex", flexDirection: "column" as const, gap: "0.75rem" } },
+        smallEl, quoteEl
+      )
+      blocks.push(React.createElement("div", { key: big.id, style: { display: "flex", gap: "0.75rem" } }, bigEl, rightCol))
+      i += 2
     }
-    return items
+    return blocks
   })()
 
   // ---------- Seite ----------
@@ -319,49 +291,15 @@ export default function LinasoulPortfolio() {
             </div>
           </div>
 
-          {/* Desktop: 10-col masonry grid with pattern */}
-          <div className="hidden md:grid gap-4" style={{ gridTemplateColumns: "repeat(10, 1fr)" }}>
-            {galleryItems.length ? galleryItems : (
-              <div style={{ gridColumn: "1 / 11" }} className="rounded-xl border border-dashed border-slate-300 bg-white/70 p-16 text-center text-slate-500">
-                Lade deine Bilder in <code className="rounded bg-slate-100 px-2 py-1 text-sm">public/gallery/</code> hoch.
-              </div>
-            )}
-          </div>
-
-          {/* Mobile: single column stack */}
-          <div className="flex flex-col gap-4 md:hidden">
-            {galleryImages.length ? (
-              galleryImages.map((image, i) => (
-                <div key={image.id}>
-                  <div
-                    className="group relative overflow-hidden rounded-xl transition-all duration-300 hover:scale-[1.02] hover:shadow-[0_20px_60px_rgba(15,23,42,0.18)]"
-                    style={{ height: "18rem" }}
-                  >
-                    <button
-                      type="button"
-                      onClick={() => { setZoomSrc(image.src); setZoomLevel(1) }}
-                      className="block h-full w-full cursor-zoom-in"
-                      aria-label={`Zoom ${image.name}`}
-                    >
-                      <img src={image.src} alt={image.name} className="h-full w-full object-cover" loading="lazy" />
-                    </button>
-                  </div>
-                  {(i + 1) % 3 === 0 && (
-                    <div className="py-8 text-center">
-                      <p className="font-serif italic text-slate-500 text-base leading-relaxed">
-                        „{galleryQuotes[Math.floor((i + 1) / 3) % galleryQuotes.length].text}"
-                      </p>
-                      <p className="mt-3 text-sm text-slate-400">– {galleryQuotes[Math.floor((i + 1) / 3) % galleryQuotes.length].author}</p>
-                    </div>
-                  )}
-                </div>
-              ))
-            ) : (
-              <div className="rounded-xl border border-dashed border-slate-300 bg-white/70 p-16 text-center text-slate-500">
-                Lade deine Bilder in <code className="rounded bg-slate-100 px-2 py-1 text-sm">public/gallery/</code> hoch.
-              </div>
-            )}
-          </div>
+          {galleryItems.length ? (
+            <div className="flex flex-col gap-6">
+              {galleryItems}
+            </div>
+          ) : (
+            <div className="rounded-xl border border-dashed border-slate-300 bg-white/70 p-16 text-center text-slate-500">
+              Lade deine Bilder in <code className="rounded bg-slate-100 px-2 py-1 text-sm">public/gallery/</code> hoch.
+            </div>
+          )}
         </div>
       </section>
 
