@@ -41,7 +41,7 @@ function GalleryTile({ image, onZoom, col, height }: { image: GalleryImage; onZo
   const imageSrc = image.src || "/placeholder.svg"
   return (
     <div
-      className="group relative overflow-hidden rounded-xl bg-slate-950/5 transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-[0_20px_60px_rgba(15,23,42,0.18)]"
+      className="group relative overflow-hidden rounded-3xl bg-slate-950/5 transition-all duration-300 ease-out hover:scale-[1.02] hover:shadow-[0_20px_60px_rgba(15,23,42,0.18)]"
       style={{ gridColumn: col, height }}
     >
       <button
@@ -56,7 +56,7 @@ function GalleryTile({ image, onZoom, col, height }: { image: GalleryImage; onZo
           className="h-full w-full object-cover transition-transform duration-300 ease-out group-hover:scale-105"
           loading="lazy"
         />
-        <div className="pointer-events-none absolute inset-0 rounded-xl bg-gradient-to-t from-slate-950/20 via-transparent to-transparent" />
+        <div className="pointer-events-none absolute inset-0 rounded-3xl bg-gradient-to-t from-slate-950/20 via-transparent to-transparent" />
       </button>
     </div>
   )
@@ -113,6 +113,25 @@ export default function LinasoulPortfolio() {
     track("Homepage Viewed")
   }, [])
 
+  // Scroll-triggered entrance animations
+  useEffect(() => {
+    const els = document.querySelectorAll(".scroll-hidden")
+    if (!els.length) return
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("scroll-visible")
+            obs.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.08 }
+    )
+    els.forEach((el) => obs.observe(el))
+    return () => obs.disconnect()
+  }, [galleryImages])
+
   // Laden + Normalisieren
   useEffect(() => {
     async function load() {
@@ -136,41 +155,34 @@ export default function LinasoulPortfolio() {
     load()
   }, [])
 
-  // Build bento blocks via React.createElement (avoids JSX-in-IIFE SWC bug)
-  const galleryItems = (() => {
-    const blocks: React.ReactElement[] = []
-    let i = 0
-    let qi = 0
-    while (i < galleryImages.length) {
-      const big = galleryImages[i]
-      const small = galleryImages[i + 1]
-      const q = galleryQuotes[qi % galleryQuotes.length]
-      qi++
-      const imgStyle = { height: "100%", width: "100%", objectFit: "cover" as const }
-      const bigEl = React.createElement("div",
-        { style: { flex: 3, aspectRatio: "1 / 1", overflow: "hidden", borderRadius: "0.75rem", cursor: "zoom-in" }, onClick: () => { setZoomSrc(big.src); setZoomLevel(1) } },
-        React.createElement("img", { src: big.src, alt: big.name, style: imgStyle, loading: "lazy" as const })
-      )
-      const smallEl = small
-        ? React.createElement("div",
-            { style: { flex: 3, overflow: "hidden", borderRadius: "0.75rem", cursor: "zoom-in" }, onClick: () => { setZoomSrc(small.src); setZoomLevel(1) } },
-            React.createElement("img", { src: small.src, alt: small.name, style: imgStyle, loading: "lazy" as const })
-          )
-        : React.createElement("div", { style: { flex: 3, borderRadius: "0.75rem", background: "#f8fafc" } })
-      const quoteEl = React.createElement("div",
-        { style: { flex: 2, display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "center", textAlign: "center" as const, padding: "1rem" } },
-        React.createElement("p", { style: { fontFamily: "serif", fontStyle: "italic", fontSize: "0.9rem", lineHeight: 1.6, color: "#64748b" } }, "„" + q.text + "“"),
-        React.createElement("p", { style: { marginTop: "0.5rem", fontSize: "0.75rem", color: "#94a3b8" } }, "– " + q.author)
-      )
-      const rightCol = React.createElement("div",
-        { style: { flex: 2, display: "flex", flexDirection: "column" as const, gap: "0.75rem" } },
-        smallEl, quoteEl
-      )
-      blocks.push(React.createElement("div", { key: big.id, style: { display: "flex", gap: "0.75rem" } }, bigEl, rightCol))
-      i += 2
+
+  // Pure data: 5-row repeating gallery layout
+  const galleryRows = (() => {
+    const rows = []
+    const ROW_DEFS = [
+      { lw: "40%", rw: "60%", lk: "img",   rk: "img",   h: "15rem" },
+      { lw: "40%", rw: "60%", lk: "img",   rk: "quote", h: "18rem" },
+      { lw: "60%", rw: "40%", lk: "img",   rk: "img",   h: "15rem" },
+      { lw: "40%", rw: "60%", lk: "quote", rk: "img",   h: "18rem" },
+      { lw: "40%", rw: "60%", lk: "img",   rk: "img",   h: "15rem" },
+    ]
+    let imgIdx = 0
+    let quoteIdx = 0
+    let rowNum = 0
+    while (imgIdx < galleryImages.length) {
+      const def = ROW_DEFS[rowNum % 5]
+      const lImg = def.lk === "img" ? (galleryImages[imgIdx] || null) : null
+      const lQ = def.lk === "quote" ? galleryQuotes[quoteIdx % 4] : null
+      if (def.lk === "img") imgIdx++; else quoteIdx++
+      const rImg = def.rk === "img" ? (galleryImages[imgIdx] || null) : null
+      const rQ = def.rk === "quote" ? galleryQuotes[quoteIdx % 4] : null
+      if (def.rk === "img") imgIdx++; else quoteIdx++
+      rows.push({ lw: def.lw, rw: def.rw, h: def.h, lImg, lQ, rImg, rQ })
+      rowNum++
     }
-    return blocks
+    return rows
   })()
+
 
   // ---------- Seite ----------
   return (
@@ -291,9 +303,44 @@ export default function LinasoulPortfolio() {
             </div>
           </div>
 
-          {galleryItems.length ? (
-            <div className="flex flex-col gap-6">
-              {galleryItems}
+          {galleryRows.length ? (
+            <div className="flex flex-col gap-3 sm:gap-4">
+              {galleryRows.map((row, idx) => (
+                <div
+                  key={idx}
+                  className="flex gap-3 sm:gap-4 scroll-hidden"
+                  style={{ transitionDelay: `${idx * 0.1}s` }}
+                >
+                  <div
+                    className={row.lImg ? "overflow-hidden rounded-3xl group cursor-zoom-in" : "flex flex-col items-center justify-center px-6 text-center rounded-3xl bg-slate-50/60"}
+                    style={{ width: row.lw, height: row.h, flexShrink: 0 }}
+                    onClick={row.lImg ? () => { setZoomSrc(row.lImg!.src); setZoomLevel(1) } : undefined}
+                  >
+                    {row.lImg ? (
+                      <img src={row.lImg.src} alt={row.lImg.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+                    ) : row.lQ ? (
+                      <>
+                        <p className="font-serif text-base italic leading-relaxed text-slate-500 sm:text-lg">{"\u201e"}{row.lQ.text}{"\u201c"}</p>
+                        <p className="mt-2 text-sm text-slate-400">{"\u2013"} {row.lQ.author}</p>
+                      </>
+                    ) : null}
+                  </div>
+                  <div
+                    className={row.rImg ? "overflow-hidden rounded-3xl group cursor-zoom-in" : "flex flex-col items-center justify-center px-6 text-center rounded-3xl bg-slate-50/60"}
+                    style={{ flex: 1, height: row.h }}
+                    onClick={row.rImg ? () => { setZoomSrc(row.rImg!.src); setZoomLevel(1) } : undefined}
+                  >
+                    {row.rImg ? (
+                      <img src={row.rImg.src} alt={row.rImg.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+                    ) : row.rQ ? (
+                      <>
+                        <p className="font-serif text-base italic leading-relaxed text-slate-500 sm:text-lg">{"\u201e"}{row.rQ.text}{"\u201c"}</p>
+                        <p className="mt-2 text-sm text-slate-400">{"\u2013"} {row.rQ.author}</p>
+                      </>
+                    ) : null}
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <div className="rounded-xl border border-dashed border-slate-300 bg-white/70 p-16 text-center text-slate-500">
@@ -362,15 +409,24 @@ export default function LinasoulPortfolio() {
             <X className="h-5 w-5 text-gray-800" />
           </button>
 
-          <div className="relative z-[9995] max-h-screen max-w-6xl overflow-auto">
+          <div className="relative z-[9995]">
             <img
               src={zoomSrc!}
               alt="Zoomed artwork"
-              className="mx-auto block cursor-zoom-in transition-transform duration-200"
-              style={{ transform: `scale(${zoomLevel})`, transformOrigin: "center" }}
+              className="mx-auto block rounded-3xl shadow-2xl"
+              style={{
+                maxHeight: "90vh",
+                maxWidth: "90vw",
+                width: "auto",
+                height: "auto",
+                objectFit: "contain" as const,
+                transform: `scale(${zoomLevel})`,
+                transformOrigin: "center",
+                cursor: zoomLevel === 1 ? "zoom-in" : "zoom-out",
+              }}
               onClick={(e) => {
                 e.stopPropagation()
-                setZoomLevel((z) => (z === 1 ? 1.6 : 1))
+                setZoomLevel((z) => (z === 1 ? 1.5 : 1))
               }}
             />
           </div>
