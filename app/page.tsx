@@ -136,41 +136,17 @@ export default function LinasoulPortfolio() {
     load()
   }, [])
 
-  // Build bento blocks via React.createElement (avoids JSX-in-IIFE SWC bug)
-  const galleryItems = (() => {
-    const blocks: React.ReactElement[] = []
-    let i = 0
-    let qi = 0
-    while (i < galleryImages.length) {
-      const big = galleryImages[i]
-      const small = galleryImages[i + 1]
-      const q = galleryQuotes[qi % galleryQuotes.length]
-      qi++
-      const imgStyle = { height: "100%", width: "100%", objectFit: "cover" as const }
-      const bigEl = React.createElement("div",
-        { style: { flex: 3, aspectRatio: "1 / 1", overflow: "hidden", borderRadius: "0.75rem", cursor: "zoom-in" }, onClick: () => { setZoomSrc(big.src); setZoomLevel(1) } },
-        React.createElement("img", { src: big.src, alt: big.name, style: imgStyle, loading: "lazy" as const })
-      )
-      const smallEl = small
-        ? React.createElement("div",
-            { style: { flex: 3, minHeight: "0", overflow: "hidden", borderRadius: "0.75rem", cursor: "zoom-in" }, onClick: () => { setZoomSrc(small.src); setZoomLevel(1) } },
-            React.createElement("img", { src: small.src, alt: small.name, style: imgStyle, loading: "lazy" as const })
-          )
-        : React.createElement("div", { style: { flex: 3, borderRadius: "0.75rem", background: "#f8fafc" } })
-      const quoteEl = React.createElement("div",
-        { style: { flex: 2, minHeight: "0", display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "center", textAlign: "center" as const, padding: "1rem" } },
-        React.createElement("p", { style: { fontFamily: "serif", fontStyle: "italic", fontSize: "0.9rem", lineHeight: 1.6, color: "#64748b" } }, "„" + q.text + "“"),
-        React.createElement("p", { style: { marginTop: "0.5rem", fontSize: "0.75rem", color: "#94a3b8" } }, "– " + q.author)
-      )
-      const rightCol = React.createElement("div",
-        { style: { flex: 2, minHeight: "0", display: "flex", flexDirection: "column" as const, gap: "0.75rem" } },
-        smallEl, quoteEl
-      )
-      blocks.push(React.createElement("div", { key: big.id, style: { display: "flex", gap: "0.75rem", alignItems: "stretch" } }, bigEl, rightCol))
-      i += 2
-    }
-    return blocks
-  })()
+
+  // Pure data: pair images for bento blocks
+  const bentoPairs = Array.from(
+    { length: Math.ceil(galleryImages.length / 2) },
+    (_, idx) => ({
+      big: galleryImages[idx * 2],
+      small: galleryImages[idx * 2 + 1] || null,
+      quote: galleryQuotes[idx % galleryQuotes.length],
+    })
+  )
+
 
   // ---------- Seite ----------
   return (
@@ -291,9 +267,43 @@ export default function LinasoulPortfolio() {
             </div>
           </div>
 
-          {galleryItems.length ? (
+          {bentoPairs.length ? (
             <div className="flex flex-col gap-6">
-              {galleryItems}
+              {bentoPairs.map(({ big, small, quote }) => (
+                <div key={big.id} className="flex gap-3 sm:gap-4" style={{ alignItems: "stretch" }}>
+                  {/* Left: large square tile */}
+                  <div
+                    className="overflow-hidden rounded-xl"
+                    style={{ flex: 3, aspectRatio: "1 / 1", cursor: "zoom-in" }}
+                    onClick={() => { setZoomSrc(big.src); setZoomLevel(1) }}
+                  >
+                    <img src={big.src} alt={big.name} className="h-full w-full object-cover" loading="lazy" />
+                  </div>
+                  {/* Right column: smaller image + quote */}
+                  <div className="flex flex-col gap-3 sm:gap-4" style={{ flex: 2, minHeight: 0 }}>
+                    {small ? (
+                      <div
+                        className="overflow-hidden rounded-xl"
+                        style={{ flex: 3, minHeight: 0, cursor: "zoom-in" }}
+                        onClick={() => { setZoomSrc(small.src); setZoomLevel(1) }}
+                      >
+                        <img src={small.src} alt={small.name} className="h-full w-full object-cover" loading="lazy" />
+                      </div>
+                    ) : (
+                      <div className="rounded-xl bg-slate-50" style={{ flex: 3, minHeight: 0 }} />
+                    )}
+                    <div
+                      className="flex flex-col items-center justify-center rounded-xl px-4 text-center"
+                      style={{ flex: 2, minHeight: 0 }}
+                    >
+                      <p className="font-serif text-sm italic leading-relaxed text-slate-500 sm:text-base">
+                        {"„"}{quote.text}{"“"}
+                      </p>
+                      <p className="mt-2 text-xs text-slate-400">{"–"} {quote.author}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           ) : (
             <div className="rounded-xl border border-dashed border-slate-300 bg-white/70 p-16 text-center text-slate-500">
