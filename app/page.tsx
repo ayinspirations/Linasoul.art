@@ -156,15 +156,32 @@ export default function LinasoulPortfolio() {
   }, [])
 
 
-  // Pure data: pair images for bento blocks
-  const bentoPairs = Array.from(
-    { length: Math.ceil(galleryImages.length / 2) },
-    (_, idx) => ({
-      big: galleryImages[idx * 2],
-      small: galleryImages[idx * 2 + 1] || null,
-      quote: galleryQuotes[idx % galleryQuotes.length],
-    })
-  )
+  // Pure data: 5-row repeating gallery layout
+  const galleryRows = (() => {
+    const rows = []
+    const ROW_DEFS = [
+      { lw: "40%", rw: "60%", lk: "img",   rk: "img",   h: "15rem" },
+      { lw: "40%", rw: "60%", lk: "img",   rk: "quote", h: "18rem" },
+      { lw: "60%", rw: "40%", lk: "img",   rk: "img",   h: "15rem" },
+      { lw: "40%", rw: "60%", lk: "quote", rk: "img",   h: "18rem" },
+      { lw: "40%", rw: "60%", lk: "img",   rk: "img",   h: "15rem" },
+    ]
+    let imgIdx = 0
+    let quoteIdx = 0
+    let rowNum = 0
+    while (imgIdx < galleryImages.length) {
+      const def = ROW_DEFS[rowNum % 5]
+      const lImg = def.lk === "img" ? (galleryImages[imgIdx] || null) : null
+      const lQ = def.lk === "quote" ? galleryQuotes[quoteIdx % 4] : null
+      if (def.lk === "img") imgIdx++; else quoteIdx++
+      const rImg = def.rk === "img" ? (galleryImages[imgIdx] || null) : null
+      const rQ = def.rk === "quote" ? galleryQuotes[quoteIdx % 4] : null
+      if (def.rk === "img") imgIdx++; else quoteIdx++
+      rows.push({ lw: def.lw, rw: def.rw, h: def.h, lImg, lQ, rImg, rQ })
+      rowNum++
+    }
+    return rows
+  })()
 
 
   // ---------- Seite ----------
@@ -286,44 +303,41 @@ export default function LinasoulPortfolio() {
             </div>
           </div>
 
-          {bentoPairs.length ? (
-            <div className="flex flex-col gap-6">
-              {bentoPairs.map(({ big, small, quote }) => (
+          {galleryRows.length ? (
+            <div className="flex flex-col gap-3 sm:gap-4">
+              {galleryRows.map((row, idx) => (
                 <div
-                  key={big.id}
+                  key={idx}
                   className="flex gap-3 sm:gap-4 scroll-hidden"
-                  style={{ alignItems: "stretch", transitionDelay: `${idx * 0.12}s` }}
+                  style={{ transitionDelay: `${idx * 0.1}s` }}
                 >
-                  {/* Left: large square tile */}
                   <div
-                    className="overflow-hidden rounded-3xl"
-                    style={{ flex: 3, aspectRatio: "1 / 1", cursor: "zoom-in" }}
-                    onClick={() => { setZoomSrc(big.src); setZoomLevel(1) }}
+                    className={row.lImg ? "overflow-hidden rounded-3xl group cursor-zoom-in" : "flex flex-col items-center justify-center px-6 text-center rounded-3xl bg-slate-50/60"}
+                    style={{ width: row.lw, height: row.h, flexShrink: 0 }}
+                    onClick={row.lImg ? () => { setZoomSrc(row.lImg!.src); setZoomLevel(1) } : undefined}
                   >
-                    <img src={big.src} alt={big.name} className="h-full w-full object-cover" loading="lazy" />
+                    {row.lImg ? (
+                      <img src={row.lImg.src} alt={row.lImg.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+                    ) : row.lQ ? (
+                      <>
+                        <p className="font-serif text-base italic leading-relaxed text-slate-500 sm:text-lg">{"\u201e"}{row.lQ.text}{"\u201c"}</p>
+                        <p className="mt-2 text-sm text-slate-400">{"\u2013"} {row.lQ.author}</p>
+                      </>
+                    ) : null}
                   </div>
-                  {/* Right column: smaller image + quote */}
-                  <div className="flex flex-col gap-3 sm:gap-4" style={{ flex: 2, minHeight: 0 }}>
-                    {small ? (
-                      <div
-                        className="overflow-hidden rounded-3xl"
-                        style={{ flex: 3, minHeight: 0, cursor: "zoom-in" }}
-                        onClick={() => { setZoomSrc(small.src); setZoomLevel(1) }}
-                      >
-                        <img src={small.src} alt={small.name} className="h-full w-full object-cover" loading="lazy" />
-                      </div>
-                    ) : (
-                      <div className="rounded-3xl bg-slate-50" style={{ flex: 3, minHeight: 0 }} />
-                    )}
-                    <div
-                      className="flex flex-col items-center justify-center rounded-3xl px-4 text-center"
-                      style={{ flex: 2, minHeight: 0 }}
-                    >
-                      <p className="font-serif text-sm italic leading-relaxed text-slate-500 sm:text-base">
-                        {"„"}{quote.text}{"“"}
-                      </p>
-                      <p className="mt-2 text-xs text-slate-400">{"–"} {quote.author}</p>
-                    </div>
+                  <div
+                    className={row.rImg ? "overflow-hidden rounded-3xl group cursor-zoom-in" : "flex flex-col items-center justify-center px-6 text-center rounded-3xl bg-slate-50/60"}
+                    style={{ flex: 1, height: row.h }}
+                    onClick={row.rImg ? () => { setZoomSrc(row.rImg!.src); setZoomLevel(1) } : undefined}
+                  >
+                    {row.rImg ? (
+                      <img src={row.rImg.src} alt={row.rImg.name} className="h-full w-full object-cover transition-transform duration-300 group-hover:scale-105" loading="lazy" />
+                    ) : row.rQ ? (
+                      <>
+                        <p className="font-serif text-base italic leading-relaxed text-slate-500 sm:text-lg">{"\u201e"}{row.rQ.text}{"\u201c"}</p>
+                        <p className="mt-2 text-sm text-slate-400">{"\u2013"} {row.rQ.author}</p>
+                      </>
+                    ) : null}
                   </div>
                 </div>
               ))}
