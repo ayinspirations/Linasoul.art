@@ -153,20 +153,20 @@ export default function LinasoulPortfolio() {
       )
       const smallEl = small
         ? React.createElement("div",
-            { style: { flex: 3, overflow: "hidden", borderRadius: "0.75rem", cursor: "zoom-in" }, onClick: () => { setZoomSrc(small.src); setZoomLevel(1) } },
+            { style: { flex: 3, minHeight: "0", overflow: "hidden", borderRadius: "0.75rem", cursor: "zoom-in" }, onClick: () => { setZoomSrc(small.src); setZoomLevel(1) } },
             React.createElement("img", { src: small.src, alt: small.name, style: imgStyle, loading: "lazy" as const })
           )
         : React.createElement("div", { style: { flex: 3, borderRadius: "0.75rem", background: "#f8fafc" } })
       const quoteEl = React.createElement("div",
-        { style: { flex: 2, display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "center", textAlign: "center" as const, padding: "1rem" } },
+        { style: { flex: 2, minHeight: "0", display: "flex", flexDirection: "column" as const, alignItems: "center", justifyContent: "center", textAlign: "center" as const, padding: "1rem" } },
         React.createElement("p", { style: { fontFamily: "serif", fontStyle: "italic", fontSize: "0.9rem", lineHeight: 1.6, color: "#64748b" } }, "„" + q.text + "“"),
         React.createElement("p", { style: { marginTop: "0.5rem", fontSize: "0.75rem", color: "#94a3b8" } }, "– " + q.author)
       )
       const rightCol = React.createElement("div",
-        { style: { flex: 2, display: "flex", flexDirection: "column" as const, gap: "0.75rem" } },
+        { style: { flex: 2, minHeight: "0", display: "flex", flexDirection: "column" as const, gap: "0.75rem" } },
         smallEl, quoteEl
       )
-      blocks.push(React.createElement("div", { key: big.id, style: { display: "flex", gap: "0.75rem" } }, bigEl, rightCol))
+      blocks.push(React.createElement("div", { key: big.id, style: { display: "flex", gap: "0.75rem", alignItems: "stretch" } }, bigEl, rightCol))
       i += 2
     }
     return blocks
@@ -362,15 +362,24 @@ export default function LinasoulPortfolio() {
             <X className="h-5 w-5 text-gray-800" />
           </button>
 
-          <div className="relative z-[9995] max-h-screen max-w-6xl overflow-auto">
+          <div className="relative z-[9995]">
             <img
               src={zoomSrc!}
               alt="Zoomed artwork"
-              className="mx-auto block cursor-zoom-in transition-transform duration-200"
-              style={{ transform: `scale(${zoomLevel})`, transformOrigin: "center" }}
+              className="mx-auto block rounded-xl shadow-2xl"
+              style={{
+                maxHeight: "90vh",
+                maxWidth: "90vw",
+                width: "auto",
+                height: "auto",
+                objectFit: "contain" as const,
+                transform: `scale(${zoomLevel})`,
+                transformOrigin: "center",
+                cursor: zoomLevel === 1 ? "zoom-in" : "zoom-out",
+              }}
               onClick={(e) => {
                 e.stopPropagation()
-                setZoomLevel((z) => (z === 1 ? 1.6 : 1))
+                setZoomLevel((z) => (z === 1 ? 1.5 : 1))
               }}
             />
           </div>
