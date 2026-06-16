@@ -113,6 +113,25 @@ export default function LinasoulPortfolio() {
     track("Homepage Viewed")
   }, [])
 
+  // Scroll-triggered entrance animations
+  useEffect(() => {
+    const els = document.querySelectorAll(".scroll-hidden")
+    if (!els.length) return
+    const obs = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add("scroll-visible")
+            obs.unobserve(entry.target)
+          }
+        })
+      },
+      { threshold: 0.08 }
+    )
+    els.forEach((el) => obs.observe(el))
+    return () => obs.disconnect()
+  }, [galleryImages])
+
   // Laden + Normalisieren
   useEffect(() => {
     async function load() {
@@ -270,7 +289,11 @@ export default function LinasoulPortfolio() {
           {bentoPairs.length ? (
             <div className="flex flex-col gap-6">
               {bentoPairs.map(({ big, small, quote }) => (
-                <div key={big.id} className="flex gap-3 sm:gap-4" style={{ alignItems: "stretch" }}>
+                <div
+                  key={big.id}
+                  className="flex gap-3 sm:gap-4 scroll-hidden"
+                  style={{ alignItems: "stretch", transitionDelay: `${idx * 0.12}s` }}
+                >
                   {/* Left: large square tile */}
                   <div
                     className="overflow-hidden rounded-3xl"

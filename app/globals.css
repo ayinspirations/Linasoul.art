@@ -2,6 +2,24 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Scroll-triggered entrance animation */
+.scroll-hidden {
+  opacity: 0;
+  transform: translateY(64px);
+}
+
+.scroll-visible {
+  opacity: 1;
+  transform: translateY(0);
+  transition: opacity 0.65s cubic-bezier(0.16, 1, 0.3, 1),
+              transform 0.65s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-hidden { opacity: 1; transform: none; }
+  .scroll-visible { transition: none; }
+}
+
 @font-face {
   font-family: 'Amsterdam Two';
   src: url('/fonts/amsterdamtwottf-ovmee.ttf') format('truetype');
